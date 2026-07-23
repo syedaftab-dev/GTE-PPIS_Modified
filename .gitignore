@@ -1,28 +1,17 @@
-# Python
-__pycache__/
-*.py[cod]
-*.so
-
 # Virtual environment
 venv/
 
-# Dataset folders
+# Data
 Feature/
 PDB/
 
+# Training outputs
+Log/
+
+# Python cache
+__pycache__/
+
 # Model checkpoints
+*.pkl
 *.pth
 *.pt
-*.ckpt
-
-# Logs
-*.log
-
-# IDE
-.vscode/
-.idea/
-
-# OS files
-.DS_Store
-Thumbs.db
-
