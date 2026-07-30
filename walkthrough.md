@@ -52,22 +52,22 @@ To train the models with cross-validation and a full training dataset run, use `
 
 ### A. Classical Baseline (Original Model features only)
 ```bash
-./venv/bin/python train.py --fusion_mode none
+source venv/bin/activate && python train.py --fusion_mode none --focal_gamma 2.0
 ```
 
 ### B. Naive Concat Fusion Mode
 ```bash
-./venv/bin/python train.py --fusion_mode concat --d_proj 128
+source venv/bin/activate && python train.py --fusion_mode concat --d_proj 128 --focal_gamma 2.0
 ```
 
 ### C. Gated Fusion Mode
 ```bash
-./venv/bin/python train.py --fusion_mode gated --d_proj 128
+source venv/bin/activate && python train.py --fusion_mode gated --d_proj 128 --focal_gamma 2.0
 ```
 
 ### D. Single-Head Cross-Attention Fusion Mode
 ```bash
-./venv/bin/python train.py --fusion_mode cross_attn --d_proj 128
+source venv/bin/activate && python train.py --fusion_mode cross_attn --d_proj 128 --focal_gamma 2.0
 ```
 
 ### Model Logging and Outputs
@@ -80,9 +80,9 @@ Checkpoints and execution logs are saved in mode-specific directories inside the
 
 To verify that the forward and backward passes run successfully on your system without training to completion, append the `--smoke_test` flag:
 ```bash
-./venv/bin/python train.py --fusion_mode concat --smoke_test
-./venv/bin/python train.py --fusion_mode gated --smoke_test
-./venv/bin/python train.py --fusion_mode cross_attn --smoke_test
+source venv/bin/activate && python train.py --fusion_mode concat --smoke_test --focal_gamma 2.0
+source venv/bin/activate && python train.py --fusion_mode gated --smoke_test --focal_gamma 2.0
+source venv/bin/activate && python train.py --fusion_mode cross_attn --smoke_test --focal_gamma 2.0
 ```
 *   **Behavior**: Restricts the datasets to 2 samples, runs exactly 1 fold and 1 epoch, and exits immediately.
 
@@ -93,7 +93,7 @@ To verify that the forward and backward passes run successfully on your system w
 Once training has completed for a specific mode, evaluate the saved checkpoints on all test sets (`Test_60`, `Test_315-28`, and `UBtest_31-6`) by pointing `test.py` to the appropriate model directory:
 
 ```bash
-./venv/bin/python test.py --fusion_mode <fusion_mode> --d_proj 128 --model_dir Log/fusion_<fusion_mode>_d128_<timestamp>/model/
+source venv/bin/activate && python test.py --fusion_mode <fusion_mode> --d_proj 128 --model_dir Log/fusion_<fusion_mode>_d128_<timestamp>/model/
 ```
 
 ### Gate Value Collection (Gated Mode only)
