@@ -12,12 +12,15 @@ from data_generator import *
 from EGNN_model import *
 from final_model import *
 from GraphTransformer_Block import *
+from loss import compute_pos_weight
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--fusion_mode', type=str, default='none', choices=['none', 'concat', 'gated', 'cross_attn'])
 parser.add_argument('--d_proj', type=int, default=128)
 parser.add_argument('--model_time', type=str, default=None)
 parser.add_argument('--smoke_test', action='store_true')
+parser.add_argument('--focal_gamma', type=float, default=2.0,
+                    help='Focal Loss gamma (0 = weighted CrossEntropy, 2 = standard Focal Loss)')
 args = parser.parse_args()
 
 FUSION_MODE = args.fusion_mode
@@ -178,8 +181,9 @@ def evaluate(model, data_loader):
 def analysis(y_true, y_pred, best_threshold = None):
     if best_threshold == None:
         best_f1 = 0
-        best_threshold = 0
-        for threshold in range(0, 100):
+        best_threshold = 0.5  # fallback if no threshold improves over this
+        # Start from 1 (threshold=0.01) to exclude the degenerate all-positive case.
+        for threshold in range(1, 100):
             threshold = threshold / 100
             binary_pred = [1 if pred >= threshold else 0 for pred in y_pred]
             binary_true = y_true
@@ -291,7 +295,10 @@ def cross_validation(all_dataframe, fold_number=5):
         print("\n\n========== Smoke Test Fold 1 ==========")
         train_dataframe = all_dataframe.iloc[:2]
         valid_dataframe = all_dataframe.iloc[2:4]
-        model = FinalModel(INPUT_DIM, HIDDEN_DIM, FLITER_DIM, OUTPUT_SIZE, DROPOUT, LAYER, fusion_mode=FUSION_MODE, d_proj=D_PROJ)
+        pw = compute_pos_weight(train_dataframe['label'].values)
+        model = FinalModel(INPUT_DIM, HIDDEN_DIM, FLITER_DIM, OUTPUT_SIZE, DROPOUT, LAYER,
+                           fusion_mode=FUSION_MODE, d_proj=D_PROJ,
+                           pos_weight=pw, focal_gamma=args.focal_gamma)
         if torch.cuda.is_available():
             model.cuda()
         best_epoch, valid_auc, valid_aupr = train(model, train_dataframe, valid_dataframe, fold=1)
@@ -310,8 +317,14 @@ def cross_validation(all_dataframe, fold_number=5):
         print("Train on", str(train_dataframe.shape[0]), "samples, validate on", str(valid_dataframe.shape[0]),
               "samples")
 
-        model = FinalModel(INPUT_DIM, HIDDEN_DIM, FLITER_DIM, OUTPUT_SIZE, DROPOUT, LAYER, fusion_mode=FUSION_MODE, d_proj=D_PROJ)
-        # model = GraghTransformer(in_channels=INPUT_DIM,edge_features=2)
+        # Compute per-fold positive-class weight so the loss reflects each fold's
+        # exact label ratio (folds may differ slightly in composition).
+        pw = compute_pos_weight(train_dataframe['label'].values)
+        print(f"Fold {fold + 1} neg/pos weight: {pw:.4f}")
+
+        model = FinalModel(INPUT_DIM, HIDDEN_DIM, FLITER_DIM, OUTPUT_SIZE, DROPOUT, LAYER,
+                           fusion_mode=FUSION_MODE, d_proj=D_PROJ,
+                           pos_weight=pw, focal_gamma=args.focal_gamma)
 
         if torch.cuda.is_available():
             model.cuda()
@@ -340,7 +353,11 @@ def train_full_model(all_dataframe, aver_epoch):
         all_dataframe = all_dataframe.iloc[:2]
     print("\n\nTraining a full model using all training data...\n")
 
-    model = FinalModel(INPUT_DIM, HIDDEN_DIM, FLITER_DIM, OUTPUT_SIZE, DROPOUT, LAYER, fusion_mode=FUSION_MODE, d_proj=D_PROJ)
+    pw = compute_pos_weight(all_dataframe['label'].values)
+    print(f"Full model neg/pos weight: {pw:.4f}")
+    model = FinalModel(INPUT_DIM, HIDDEN_DIM, FLITER_DIM, OUTPUT_SIZE, DROPOUT, LAYER,
+                       fusion_mode=FUSION_MODE, d_proj=D_PROJ,
+                       pos_weight=pw, focal_gamma=args.focal_gamma)
     if torch.cuda.is_available():
         model.cuda()
 

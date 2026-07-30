@@ -4,6 +4,27 @@ This document describes how to execute the embedding generation, run the trainin
 
 ---
 
+
+## 0. Latest Changes: Stability + Focal Loss (2026-07-30)
+
+**Problem**: Previous run (`fusion_gated_d128_2026-07-23-15-16-42`) — Folds 2, 5, and both full models collapsed (MCC=0, threshold=0.0). Fold 4 alone succeeded (AUROC 0.7585, MCC 0.3055 on Test_60).
+
+Three root causes fixed:
+- **EGNN `residual=False`** across 10 layers → fixed with `residual=True` in `final_model.py`
+- **Unweighted CE loss** vs. 15.61% positive class → replaced with `FocalLoss(alpha=[1.0, 5.4056], gamma=2.0)`
+- **Threshold scan included 0.0** → masked collapse as "Recall=1.0, MCC=0" → fixed to start at 0.01 in `train.py` + `test.py`
+
+**New file**: `loss.py` — `FocalLoss(alpha, gamma=2.0)` and `compute_pos_weight()`. Measured neg/pos ratio from Train_335: **5.4056** (15.61% positive, 84.39% negative, 66,208 residues).
+
+**Training command**: `python train.py --fusion_mode gated --d_proj 128 --focal_gamma 2.0`
+
+Ablation (weighted CE, no focal modulation): `--focal_gamma 0.0`
+
+**Pass criteria**: All 5 folds MCC > 0; CV avg AUROC ≥ 0.70; CV avg MCC ≥ 0.25 on Test_60.
+
+---
+
+
 ## 1. Setup and Environment
 
 Ensure that all dependencies are installed in your virtual environment:

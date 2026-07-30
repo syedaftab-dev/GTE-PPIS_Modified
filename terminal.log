@@ -1,0 +1,370 @@
+Script started on 2026-07-27 11:23:27+05:30 [TERM="xterm-256color" TTY="/dev/pts/0" COLUMNS="185" LINES="45"]
+[?2004h]0;cse-sdpl@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC: ~/PRANAV/GTE-PPIS[01;32mcse-sdpl@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC[00m:[01;34m~/PRANAV/GTE-PPIS[00m$ [7mls -lt Log[27mls -lt Log
+[?2004ltotal 172
+drwxrwxr-x 3 cse-sdpl cse-sdpl 4096 Jul 23 15:16 [0m[01;34mfusion_gated_d128_2026-07-23-15-16-42[0m
+drwxrwxr-x 3 cse-sdpl cse-sdpl 4096 Jul 23 15:09 [01;34mfusion_gated_d128_2026-07-23-15-09-29[0m
+drwxrwxr-x 3 cse-sdpl cse-sdpl 4096 Jul 23 14:28 [01;34mfusion_cross_attn_d128_2026-07-23-14-28-56[0m
+drwxrwxr-x 3 cse-sdpl cse-sdpl 4096 Jul 23 14:28 [01;34mfusion_gated_d128_2026-07-23-14-28-51[0m
+drwxrwxr-x 3 cse-sdpl cse-sdpl 4096 Jul 23 14:28 [01;34mfusion_concat_d128_2026-07-23-14-28-46[0m
+drwxrwxr-x 3 cse-sdpl cse-sdpl 4096 Jul 23 14:26 [01;34mfusion_concat_d128_2026-07-23-14-26-24[0m
+drwxrwxr-x 3 cse-sdpl cse-sdpl 4096 Jul 22 13:18 [01;34mfusion_gated_d128_2026-07-22-13-18-39[0m
+drwxrwxr-x 3 cse-sdpl cse-sdpl 4096 Jul 22 13:17 [01;34mfusion_concat_d128_2026-07-22-13-17-21[0m
+drwxrwxr-x 3 cse-sdpl cse-sdpl 4096 Jul 22 13:16 [01;34mfusion_concat_d128_2026-07-22-13-16-50[0m
+drwxrwxr-x 3 cse-sdpl cse-sdpl 4096 Jul 22 13:16 [01;34mfusion_concat_d128_2026-07-22-13-16-24[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 02:05 [01;34mfusion_concat_d128_2026-07-01-15-05-46[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 01:57 [01;34mfusion_gated_d128_2026-07-01-14-57-42[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:28 [01;34mfusion_gated_d128_2026-07-01-13-28-53[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:28 [01;34mfusion_gated_d128_2026-07-01-13-28-21[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:27 [01;34mfusion_cross_attn_d128_2026-07-01-13-27-56[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:27 [01;34mfusion_concat_d128_2026-07-01-13-27-37[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:21 [01;34mfusion_concat_d128_2026-07-01-13-21-36[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:20 [01;34mfusion_concat_d128_2026-07-01-13-20-33[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:19 [01;34mfusion_none_d128_2026-07-01-13-19-27[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:18 [01;34mfusion_gated_d128_2026-07-01-13-18-47[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:17 [01;34mfusion_gated_d128_2026-07-01-13-17-55[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:16 [01;34mfusion_gated_d128_2026-07-01-13-16-27[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:15 [01;34mfusion_gated_d128_2026-07-01-13-15-50[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:13 [01;34mfusion_gated_d128_2026-07-01-13-13-37[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:12 [01;34mfusion_gated_d128_2026-07-01-13-12-45[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:10 [01;34mfusion_gated_d128_2026-07-01-13-10-09[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:09 [01;34mfusion_gated_d128_2026-07-01-13-09-19[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  2 00:08 [01;34mfusion_concat_d128_2026-07-01-13-08-21[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 23:59 [01;34mfusion_cross_attn_d128_2026-07-01-12-59-40[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 23:52 [01;34mfusion_cross_attn_d128_2026-07-01-12-52-03[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 23:50 [01;34mfusion_cross_attn_d128_2026-07-01-12-50-49[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 23:47 [01;34mfusion_cross_attn_d128_2026-07-01-12-47-25[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 23:45 [01;34mfusion_cross_attn_d128_2026-07-01-12-45-38[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 23:43 [01;34mfusion_cross_attn_d128_2026-07-01-12-43-40[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 23:39 [01;34mfusion_gated_d128_2026-07-01-12-39-52[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 23:38 [01;34mfusion_concat_d128_2026-07-01-12-38-41[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 23:35 [01;34mfusion_concat_d128_2026-07-01-12-35-38[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 21:32 [01;34mfusion_concat_d128_2026-07-01-10-32-08[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 21:28 [01;34mfusion_none_d128_2026-07-01-09-34-00[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 05:31 [01;34m2026-06-30-18-31-07[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 05:26 [01;34m2026-06-30-18-26-29[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 02:28 [01;34m2026-06-30-15-28-36[0m
+drwxr-xr-x 3 cse-sdpl cse-sdpl 4096 Jul  1 02:20 [01;34m2026-06-30-15-20-00[0m
+[?2004h]0;cse-sdpl@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC: ~/PRANAV/GTE-PPIS[01;32mcse-sdpl@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC[00m:[01;34m~/PRANAV/GTE-PPIS[00m$ [7msource venv/bin/activate[27msource venv/bin/activate
+[?2004l[?2004h(venv) ]0;cse-sdpl@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC: ~/PRANAV/GTE-PPIS[01;32mcse-sdpl@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC[00m:[01;34m~/PRANAV/GTE-PPIS[00m$ [7mpython test.py \[27m
+[7m    --fusion_mode gated \[27m
+[7m    --d_proj 128 \[27m
+[7m    --model_dir Log/fusion_gated_d128_2026-07-23-15-16-42/model/[27m[A[A[A(venv) ]0;cse-sdpl@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC: ~/PRANAV/GTE-PPIS[01;32mcse-sdpl@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC[00m:[01;34m~/PRANAV/GTE-PPIS[00m$ python test.py \
+    --fusion_mode gated \
+    --d_proj 128 \
+    --model_dir Log/fusion_gated_d128_2026-07-23-15-16-42/model/
+[?2004l==============================================
+Evaluate on Test_60
+==============================================
+Fold1_best_model.pkl
+Saved 13144 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold1_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.48242981483538944
+Test binary acc:  0.6050669506999391
+Test precision: 0.23717948717948717
+Test recall:  0.6775903614457831
+Test f1:  0.3513682369111583
+Test AUROC:  0.6839010282706396
+Test MCC:  0.19715750505058224
+Test AUPRC:  0.26992214350644306
+Threshold:  0.19
+
+Fold2_best_model.pkl
+Saved 13144 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold2_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.5182869926095008
+Test binary acc:  0.15786670724284846
+Test precision: 0.15786670724284846
+Test recall:  1.0
+Test f1:  0.27268545896576646
+Test AUROC:  0.5049589050936785
+Test MCC:  0.0
+Test AUPRC:  0.09993013881833007
+Threshold:  0.0
+
+Fold3_best_model.pkl
+Saved 13144 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold3_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.484181505193313
+Test binary acc:  0.5943396226415094
+Test precision: 0.23490151391828096
+Test recall:  0.6954216867469879
+Test f1:  0.35118033584813824
+Test AUROC:  0.6795113020516432
+Test MCC:  0.19790716700690603
+Test AUPRC:  0.25891081901320856
+Threshold:  0.18
+
+Fold4_best_model.pkl
+Saved 13144 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold4_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.4515422629813353
+Test binary acc:  0.7731284236153378
+Test precision: 0.3561687281953695
+Test recall:  0.5412048192771084
+Test f1:  0.4296097934200459
+Test AUROC:  0.7585056932037482
+Test MCC:  0.3055265473771633
+Test AUPRC:  0.3473887500729189
+Threshold:  0.29
+
+Fold5_best_model.pkl
+Saved 13144 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold5_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.5181081429123878
+Test binary acc:  0.15786670724284846
+Test precision: 0.15786670724284846
+Test recall:  1.0
+Test f1:  0.27268545896576646
+Test AUROC:  0.49862951671171085
+Test MCC:  0.0
+Test AUPRC:  0.5767214594718132
+Threshold:  0.0
+
+Full_model_39.pkl
+Saved 13144 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Full_model_39.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.5189726079503695
+Test binary acc:  0.15786670724284846
+Test precision: 0.15786670724284846
+Test recall:  1.0
+Test f1:  0.27268545896576646
+Test AUROC:  0.48305424788865464
+Test MCC:  0.0
+Test AUPRC:  0.5504249545387299
+Threshold:  0.0
+
+Full_model_45.pkl
+Saved 13144 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Full_model_45.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.5185684964060784
+Test binary acc:  0.15786670724284846
+Test precision: 0.15786670724284846
+Test recall:  1.0
+Test f1:  0.27268545896576646
+Test AUROC:  0.5129799820839052
+Test MCC:  0.0
+Test AUPRC:  0.19588789856676644
+Threshold:  0.0
+
+========== Cross-Validation Results ==========
+Average binary acc:  0.4576536822884966
+Average precision:  0.22879662875576692
+Average recall:  0.7828433734939758
+Average f1:  0.33550585682217504
+Average AUROC:  0.625101289066284
+Average MCC:  0.1401182438869303
+Average AUPRC:  0.3105746621765427
+Average threshold:  0.13199999999999998
+
+==============================================
+Evaluate on Test_315-28
+==============================================
+Fold1_best_model.pkl
+Saved 60376 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold1_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.45197048622348995
+Test binary acc:  0.6432688485490924
+Test precision: 0.2233643265375757
+Test recall:  0.6113705346719589
+Test f1:  0.32718980382356616
+Test AUROC:  0.6948655045061962
+Test MCC:  0.18608024906306903
+Test AUPRC:  0.2833041698742561
+Threshold:  0.22
+
+Fold2_best_model.pkl
+Saved 60376 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold2_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.4950176730803912
+Test binary acc:  0.14187756724526301
+Test precision: 0.14187756724526301
+Test recall:  1.0
+Test f1:  0.24849873806968176
+Test AUROC:  0.509341554386362
+Test MCC:  0.0
+Test AUPRC:  0.47078128267425184
+Threshold:  0.0
+
+Fold3_best_model.pkl
+Saved 60376 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold3_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.4532390408191947
+Test binary acc:  0.6425732078971776
+Test precision: 0.2232947780234734
+Test recall:  0.6130049031053
+Test f1:  0.3273486690355963
+Test AUROC:  0.6942124747912629
+Test MCC:  0.1863754848212703
+Test AUPRC:  0.27381026413571685
+Threshold:  0.22
+
+Fold4_best_model.pkl
+Saved 60376 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold4_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.44276642960330753
+Test binary acc:  0.7201205777129985
+Test precision: 0.27049360951961215
+Test recall:  0.5731963576932056
+Test f1:  0.36754248072460516
+Test AUROC:  0.7266324768345049
+Test MCC:  0.2416830551686106
+Test AUPRC:  0.26495286911386157
+Threshold:  0.27
+
+Fold5_best_model.pkl
+Saved 60376 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold5_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.49498997561192265
+Test binary acc:  0.14187756724526301
+Test precision: 0.14187756724526301
+Test recall:  1.0
+Test f1:  0.24849873806968176
+Test AUROC:  0.4996726666514347
+Test MCC:  0.0
+Test AUPRC:  0.5699471767876777
+Threshold:  0.0
+
+Full_model_39.pkl
+Saved 60376 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Full_model_39.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.495204490236289
+Test binary acc:  0.14187756724526301
+Test precision: 0.14187756724526301
+Test recall:  1.0
+Test f1:  0.24849873806968176
+Test AUROC:  0.4798911890159914
+Test MCC:  0.0
+Test AUPRC:  0.5376415011068312
+Threshold:  0.0
+
+Full_model_45.pkl
+Saved 60376 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Full_model_45.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.4950813237798339
+Test binary acc:  0.14187756724526301
+Test precision: 0.14187756724526301
+Test recall:  1.0
+Test f1:  0.24849873806968176
+Test AUROC:  0.5123657939354642
+Test MCC:  0.0
+Test AUPRC:  0.16530325425176065
+Threshold:  0.0
+
+========== Cross-Validation Results ==========
+Average binary acc:  0.457943553729959
+Average precision:  0.20018156971423745
+Average recall:  0.7595143590940929
+Average f1:  0.3038156859446262
+Average AUROC:  0.6249449354339521
+Average MCC:  0.12282775781059
+Average AUPRC:  0.3725591525171528
+Average threshold:  0.142
+
+==============================================
+Evaluate on UBtest_31-6
+==============================================
+Fold1_best_model.pkl
+Saved 5917 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold1_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.41405309200286866
+Test binary acc:  0.6474564813249958
+Test precision: 0.18564243255601282
+Test recall:  0.5710267229254571
+Test f1:  0.28019323671497587
+Test AUROC:  0.6520365174230968
+Test MCC:  0.15420362438582857
+Test AUPRC:  0.18696250110286178
+Threshold:  0.2
+
+Fold2_best_model.pkl
+Saved 5917 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold2_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.4346745002269745
+Test binary acc:  0.12016224438059828
+Test precision: 0.12016224438059828
+Test recall:  1.0
+Test f1:  0.21454435727217863
+Test AUROC:  0.48987063504027867
+Test MCC:  0.0
+Test AUPRC:  0.42254765552570195
+Threshold:  0.0
+
+Fold3_best_model.pkl
+Saved 5917 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold3_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.41485977947711944
+Test binary acc:  0.5877978705425047
+Test precision: 0.17713004484304934
+Test recall:  0.6666666666666666
+Test f1:  0.27989371124889284
+Test AUROC:  0.6555271614003748
+Test MCC:  0.15920169145953353
+Test AUPRC:  0.18753130501426873
+Threshold:  0.17
+
+Fold4_best_model.pkl
+Saved 5917 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold4_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.37540642261505125
+Test binary acc:  0.8291363866824404
+Test precision: 0.345679012345679
+Test recall:  0.47257383966244726
+Test f1:  0.39928698752228164
+Test AUROC:  0.7725189154783536
+Test MCC:  0.3074988601544142
+Test AUPRC:  0.3182460073944738
+Threshold:  0.32
+
+Fold5_best_model.pkl
+Saved 5917 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Fold5_best_model.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.43503869414329527
+Test binary acc:  0.12016224438059828
+Test precision: 0.12016224438059828
+Test recall:  1.0
+Test f1:  0.21454435727217863
+Test AUROC:  0.4994888511741024
+Test MCC:  0.0
+Test AUPRC:  0.5594083218481862
+Threshold:  0.0
+
+Full_model_39.pkl
+Saved 5917 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Full_model_39.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.4335677087306976
+Test binary acc:  0.12016224438059828
+Test precision: 0.12016224438059828
+Test recall:  1.0
+Test f1:  0.21454435727217863
+Test AUROC:  0.49321012269192804
+Test MCC:  0.0
+Test AUPRC:  0.5426383114489599
+Threshold:  0.0
+
+Full_model_45.pkl
+Saved 5917 gate records to Log/fusion_gated_d128_2026-07-23-15-16-42/model/Full_model_45.pkl_gate_records.csv
+========== Evaluate Test set ==========
+Test loss:  0.4341730976104736
+Test binary acc:  0.12016224438059828
+Test precision: 0.12016224438059828
+Test recall:  1.0
+Test f1:  0.21454435727217863
+Test AUROC:  0.5026501661774011
+Test MCC:  0.0
+Test AUPRC:  0.15527035820927704
+Threshold:  0.0
+
+========== Cross-Validation Results ==========
+Average binary acc:  0.4609430454622275
+Average precision:  0.18975519570118754
+Average recall:  0.7420534458509142
+Average f1:  0.27769253000610156
+Average AUROC:  0.6138884161032412
+Average MCC:  0.12418083519995526
+Average AUPRC:  0.3349391581770985
+Average threshold:  0.13799999999999998
+
+[?2004h(venv) ]0;cse-sdpl@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC: ~/PRANAV/GTE-PPIS[01;32mcse-sdpl@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC[00m:[01;34m~/PRANAV/GTE-PPIS[00m$ exit
+[?2004lexit
+
+Script done on 2026-07-27 11:35:59+05:30 [COMMAND_EXIT_CODE="0"]

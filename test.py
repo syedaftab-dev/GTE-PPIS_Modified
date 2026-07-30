@@ -96,8 +96,10 @@ def evaluate(model, data_loader):
 def analysis(y_true, y_pred, best_threshold = None):
     if best_threshold == None:
         best_f1 = 0
-        best_threshold = 0
-        for threshold in range(0, 100):
+        best_threshold = 0.5  # fallback if no threshold improves over this
+        # Start from 1 (threshold=0.01) to exclude the degenerate all-positive case
+        # (threshold=0.0 gives Recall=1.0, MCC=0 for any model and is not meaningful).
+        for threshold in range(1, 100):
             threshold = threshold / 100
             binary_pred = [1 if pred >= threshold else 0 for pred in y_pred]
             binary_true = y_true
