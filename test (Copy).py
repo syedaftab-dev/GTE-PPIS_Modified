@@ -3,7 +3,6 @@ import argparse
 import pandas as pd
 from torch.autograd import Variable
 from sklearn import metrics
-from sklearn.model_selection import KFold
 from torch.utils.data import DataLoader
 
 from data_generator import *
@@ -135,29 +134,6 @@ def analysis(y_true, y_pred, best_threshold = None):
     return results
 
 
-def get_validation_dataframes():
-    with open(Dataset_Path + "Train_335.pkl", "rb") as f:
-        Train_335 = pickle.load(f)
-        Train_335.pop('2j3rA', None)
-
-    IDs, sequences, labels = [], [], []
-    for ID in Train_335:
-        IDs.append(ID)
-        item = Train_335[ID]
-        sequences.append(item[0])
-        labels.append(item[1])
-
-    train_dic = {"ID": IDs, "sequence": sequences, "label": labels}
-    all_dataframe = pd.DataFrame(train_dic)
-
-    np.random.seed(SEED)
-    kfold = KFold(n_splits=5, shuffle=True)
-    val_dataframes = {}
-    for fold, (train_idx, val_idx) in enumerate(kfold.split(all_dataframe['ID'].values, all_dataframe['label'].values), 1):
-        val_dataframes[fold] = all_dataframe.iloc[val_idx, :]
-    return val_dataframes
-
-
 def test(test_dataframe, psepos_path):
     if args.smoke_test:
         test_dataframe = test_dataframe.iloc[:2]
@@ -174,9 +150,6 @@ def test(test_dataframe, psepos_path):
         
     test_loader = DataLoader(dataset=ProDataset(dataframe=test_dataframe, psepos_path=psepos_path, fusion_mode=FUSION_MODE), batch_size=BATCH_SIZE, shuffle=True, num_workers=4, collate_fn=graph_collate)
 
-    val_dataframes = get_validation_dataframes()
-    fold_locked_thresholds = {}
-
     for model_name in sorted(os.listdir(Model_Path)):
         if not model_name.endswith('.pkl'):
             continue
@@ -185,24 +158,6 @@ def test(test_dataframe, psepos_path):
         if torch.cuda.is_available():
             model.cuda()
         model.load_state_dict(torch.load(Model_Path + model_name, map_location='cuda:0', weights_only=True))
-
-        # Compute and lock threshold from validation set (no test label leakage)
-        locked_threshold = None
-        if model_name.startswith('Fold') and '_best_model.pkl' in model_name:
-            try:
-                fold_num = int(model_name.split('Fold')[1].split('_')[0])
-                val_df = val_dataframes[fold_num]
-                val_loader = DataLoader(dataset=ProDataset(dataframe=val_df, psepos_path='./Feature/psepos/Train335_psepos_SC.pkl', fusion_mode=FUSION_MODE), batch_size=BATCH_SIZE, shuffle=False, num_workers=4, collate_fn=graph_collate)
-                _, val_true, val_pred, _, _ = evaluate(model, val_loader)
-                val_result = analysis(val_true, val_pred, best_threshold=None)
-                locked_threshold = val_result['threshold']
-                fold_locked_thresholds[fold_num] = locked_threshold
-                print(f"Validation threshold for {model_name} (Fold {fold_num}): {locked_threshold:.2f} (val F1: {val_result['f1']:.4f})")
-            except Exception as e:
-                print(f"Warning: could not compute validation threshold for {model_name}: {e}")
-        elif len(fold_locked_thresholds) > 0:
-            locked_threshold = float(np.mean(list(fold_locked_thresholds.values())))
-            print(f"Using average fold validation threshold for {model_name}: {locked_threshold:.2f}")
 
         epoch_loss_test_avg, test_true, test_pred, pred_dict, gate_records = evaluate(model, test_loader)
 
@@ -216,7 +171,7 @@ def test(test_dataframe, psepos_path):
                 writer.writerows(gate_records)
             print(f"Saved {len(gate_records)} gate records to {csv_path}")
 
-        result_test = analysis(test_true, test_pred, best_threshold=locked_threshold)
+        result_test = analysis(test_true, test_pred)
 
         for key in all_metrics:
             all_metrics[key].append(result_test[key])
