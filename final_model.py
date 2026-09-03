@@ -53,7 +53,7 @@ class FinalModel(nn.Module):
 
         self.GT = GraghTransformer(in_channels=self.actual_input_size, edge_features=2,
                                    dropout_rate=dropout_rate, num_layers=4,
-                                   transformer_residual=False)
+                                   transformer_residual=True)
 
         # --- Loss ---
         # class_weights: [neg_weight, pos_weight] = [1.0, neg/pos ratio]
@@ -88,5 +88,29 @@ class FinalModel(nn.Module):
 
         x1 = self.Egnn(node_features, xyz_feats, edges, edge_feat)
         x2 = self.GT(node_features, edge_feat, edges)
+        self.last_x1 = x1
+        self.last_x2 = x2
         x = (x1 + x2) / 2
         return x
+
+    def compute_auxiliary_losses(self, rsa_target=None, lambda_gate=0.1, lambda_agree=0.1):
+        device = self.last_x1.device if hasattr(self, 'last_x1') else torch.device('cpu')
+        loss_gate = torch.tensor(0.0, device=device)
+        loss_agree = torch.tensor(0.0, device=device)
+
+        # 1. Biophysics-Supervised Gate Loss (Idea 1)
+        # Target gate: surface-exposed residues (RSA -> 1.0) use PLM features (gate -> 0.0),
+        # buried residues (RSA -> 0.0) use classical features (gate -> 1.0).
+        if lambda_gate > 0 and self.last_gate_val is not None and rsa_target is not None:
+            target_g = 1.0 - rsa_target.float()
+            loss_gate = nn.functional.mse_loss(self.last_gate_val.squeeze(-1), target_g)
+
+        # 2. Branch-Disagreement Regularization (Idea 2)
+        # MSE between EGNN (x1) and GT (x2) branch prediction probabilities
+        if lambda_agree > 0 and hasattr(self, 'last_x1') and hasattr(self, 'last_x2'):
+            p1 = nn.functional.softmax(self.last_x1, dim=-1)
+            p2 = nn.functional.softmax(self.last_x2, dim=-1)
+            loss_agree = nn.functional.mse_loss(p1, p2)
+
+        total_aux_loss = lambda_gate * loss_gate + lambda_agree * loss_agree
+        return total_aux_loss, loss_gate, loss_agree
