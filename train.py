@@ -21,11 +21,17 @@ parser.add_argument('--model_time', type=str, default=None)
 parser.add_argument('--smoke_test', action='store_true')
 parser.add_argument('--focal_gamma', type=float, default=2.0,
                     help='Focal Loss gamma (0 = weighted CrossEntropy, 2 = standard Focal Loss)')
+parser.add_argument('--lambda_gate', type=float, default=0.1,
+                    help='Loss weight for biophysics-supervised RSA gate loss (Idea 1)')
+parser.add_argument('--lambda_agree', type=float, default=0.1,
+                    help='Loss weight for branch agreement KL loss (Idea 2)')
 args = parser.parse_args()
 
 FUSION_MODE = args.fusion_mode
 D_PROJ = args.d_proj
 model_time = args.model_time
+LAMBDA_GATE = args.lambda_gate
+LAMBDA_AGREE = args.lambda_agree
 
 if args.smoke_test:
     NUMBER_EPOCHS = 1
@@ -35,48 +41,18 @@ Model_Path = "./Model/"
 Log_path = "./Log/"
 
 
-# class EarlyStopping:
-#     def __init__(self, patience=10, delta=0, path='checkpoint.pt'):
-#         self.patience = patience
-#         self.delta = delta
-#         self.path = path
-#         self.best_score = None
-#         self.early_stop = False
-#         self.counter = 0
-
-#     def __call__(self, val_loss, model):
-#         score = -val_loss
-
-#         if self.best_score is None:
-#             self.best_score = score
-#             self.save_checkpoint(model)
-#         elif score < self.best_score + self.delta:
-#             self.counter += 1
-#             if self.counter >= self.patience:
-#                 self.early_stop = True
-#         else:
-#             self.best_score = score
-#             self.save_checkpoint(model)
-#             self.counter = 0
-
-#     def save_checkpoint(self, model):
-#         torch.save(model.state_dict(), self.path)
-
-
-
-
-
-def train_one_epoch(model, data_loader):
+def train_one_epoch(model, data_loader, lambda_gate=LAMBDA_GATE, lambda_agree=LAMBDA_AGREE):
     epoch_loss_train = 0.0
     n = 0
     for data in data_loader:
         model.optimizer.zero_grad()
-        _, _, labels, node_features, G_batch, adj_matrix, xyz_feats, edges, edge_att, edge_feat, plm_features = data
+        _, _, labels, node_features, G_batch, adj_matrix, xyz_feats, edges, edge_att, edge_feat, plm_features, rsa_features = data
 
 
         if torch.cuda.is_available():
             node_features = Variable(node_features.cuda().float())
             plm_features = Variable(plm_features.cuda().float())
+            rsa_features = Variable(rsa_features.cuda().float())
             G_batch.edata['ex'] = Variable(G_batch.edata['ex'].float())
             G_batch = G_batch.to(torch.device('cuda:0'))
             adj_matrix = Variable(adj_matrix.cuda())
@@ -88,6 +64,7 @@ def train_one_epoch(model, data_loader):
         else:
             node_features = Variable(node_features.float())
             plm_features = Variable(plm_features.float())
+            rsa_features = Variable(rsa_features.float())
             G_batch.edata['ex'] = Variable(G_batch.edata['ex'].float())
             adj_matrix = Variable(adj_matrix)
             xyz_feats = Variable(xyz_feats.float())
@@ -102,8 +79,15 @@ def train_one_epoch(model, data_loader):
 
         y_pred = model(node_features, xyz_feats, edges, edge_att, edge_feat, adj_matrix, plm_features=plm_features)
 
-        # calculate loss
-        loss = model.criterion(y_pred, y_true)
+        # calculate main loss (Focal Loss)
+        loss_focal = model.criterion(y_pred, y_true)
+
+        # calculate auxiliary losses (Idea 1 & Idea 2)
+        total_aux_loss, loss_gate, loss_agree = model.compute_auxiliary_losses(
+            rsa_target=rsa_features, lambda_gate=lambda_gate, lambda_agree=lambda_agree
+        )
+
+        loss = loss_focal + total_aux_loss
 
         # backward gradient
         loss.backward()
@@ -131,7 +115,7 @@ def evaluate(model, data_loader):
 
     for data in data_loader:
         with torch.no_grad():
-            sequence_names, _, labels, node_features, G_batch, adj_matrix, xyz_feats, edges, edge_att, edge_feat, plm_features = data
+            sequence_names, _, labels, node_features, G_batch, adj_matrix, xyz_feats, edges, edge_att, edge_feat, plm_features, rsa_features = data
 
             if torch.cuda.is_available():
                 node_features = Variable(node_features.cuda().float())

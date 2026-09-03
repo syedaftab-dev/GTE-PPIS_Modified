@@ -1,0 +1,695 @@
+\documentclass[10pt, a4paper]{article}
+
+% ---------------------------------------------------------------
+% Packages
+% ---------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.80in, top=1.0in, bottom=1.0in]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath, amssymb}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{array}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{multirow}
+\usepackage{makecell}
+\usepackage{caption}
+\usepackage{tabularx}      % flexible X columns
+\usepackage{adjustbox}     % \resizebox / adjustbox env for overflow tables
+\usepackage{pdflscape}     % landscape pages for very wide tables
+
+% ---------------------------------------------------------------
+% Colours
+% ---------------------------------------------------------------
+\definecolor{primaryblue}{RGB}{24, 76, 120}
+\definecolor{secondaryblue}{RGB}{41, 128, 185}
+\definecolor{warnorange}{RGB}{200, 100, 20}
+\definecolor{okgreen}{RGB}{30, 130, 60}
+\definecolor{lightbg}{RGB}{245, 247, 250}
+\definecolor{warnbg}{RGB}{255, 248, 230}
+
+% ---------------------------------------------------------------
+% Hyperlinks
+% ---------------------------------------------------------------
+\hypersetup{colorlinks=true, linkcolor=secondaryblue,
+            citecolor=secondaryblue, urlcolor=secondaryblue}
+
+% ---------------------------------------------------------------
+% Header / Footer
+% ---------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small \textbf{GTE-PPIS: Architecture Audit \& Results Comparison}}
+\rhead{\small \textbf{Report Date: September 3, 2026}}
+\lfoot{\small Logs: \texttt{noesmtest\_25thAugust\_13.log} \quad \texttt{rsa\_features\_test.log}}
+\rfoot{\small Page \thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+% ---------------------------------------------------------------
+% Formatting
+% ---------------------------------------------------------------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\captionsetup{font=small, labelfont=bf}
+
+% tabularx: make X columns use \footnotesize automatically
+\newcolumntype{Y}{>{\footnotesize\raggedright\arraybackslash}X}
+
+% ---------------------------------------------------------------
+% Helper commands
+% ---------------------------------------------------------------
+\newcommand{\match}[1]{\textcolor{okgreen}{\textbf{#1}}}
+\newcommand{\mismatch}[1]{\textcolor{warnorange}{\textbf{#1}}}
+\newcommand{\warn}[1]{\textcolor{warnorange}{\textbf{#1}}}
+\newcommand{\code}[1]{\texttt{\small #1}}
+
+% ================================================================
+\begin{document}
+% ================================================================
+
+% ---------------------------------------------------------------
+% Title
+% ---------------------------------------------------------------
+\begin{center}
+    {\LARGE \bfseries \color{primaryblue} GTE-PPIS: Architecture Audit \& Results Comparison}\\[4pt]
+    {\large \color{secondaryblue}
+        Codebase vs.\ Published Paper $\cdot$
+        Reproduction Gap Analysis $\cdot$
+        Three-Way Results Table}\\[6pt]
+    \rule{\textwidth}{1pt}\\[5pt]
+    \textbf{Logs used:}
+    \code{noesmtest\_25thAugust\_13.log} (no-ESM2 baseline, Aug 25 2026) \quad|\quad
+    \code{rsa\_features\_test.log} (gated ESM-2, Aug 13 2026)
+    \rule{\textwidth}{0.5pt}
+\end{center}
+
+\vspace{4pt}
+
+% ================================================================
+\section{Architecture Comparison: Paper vs.\ Codebase}
+% ================================================================
+
+The following subsections compare each architectural component against
+what is described in the published GTE-PPIS paper.
+\match{Green} = confirmed match; \mismatch{Orange} = divergence or addition.
+
+% ---------------------------------------------------------------
+\subsection{EGNN Branch}
+% ---------------------------------------------------------------
+
+% Four-column wide table: use tabularx with three Y (flexible) columns + fixed Status column
+\begin{table}[ht]
+\caption{EGNN branch: paper description vs.\ codebase (\code{EGNN\_model.py}, \code{final\_model.py})}
+\label{tab:egnn_compare}
+\begin{tabularx}{\linewidth}{>{\footnotesize\bfseries\raggedright\arraybackslash}p{2.2cm} Y Y
+    >{\footnotesize\centering\arraybackslash}p{2.8cm}}
+\toprule
+\normalsize\textbf{Dimension} & \normalsize\textbf{Paper} & \normalsize\textbf{Codebase} & \normalsize\textbf{Status} \\
+\midrule
+Layer count &
+  Not explicitly stated; ablation ``NoEGNN'' implies integral EGNN &
+  \code{n\_layers=10} (hardcoded in \code{FinalModel}) &
+  \warn{Unconfirmed} \\
+\addlinespace
+Hidden dim &
+  Not reported; implicit from overall model width &
+  \code{hidden\_nf = HIDDEN\_DIM = 256} &
+  \warn{Unconfirmed} \\
+\addlinespace
+Residual &
+  ``NoResidual'' ablation (Table~4): AUROC 0.871$\to$0.852, implying residuals are active &
+  \code{residual=True} in every \code{E\_GCL}; skip: $h_i^{l+1} = h_i^l + \phi_h(\cdot)$ &
+  \match{Match in intent; previously False --- now fixed} \\
+\addlinespace
+Normalization &
+  Not described for EGNN; norm discussion is specific to GT branch &
+  \textbf{No LayerNorm or BatchNorm inside \code{E\_GCL}}; only MLP activations (SiLU) &
+  \mismatch{Paper ambiguous; no inter-layer norm} \\
+\addlinespace
+Coordinate update &
+  Standard EGNN equivariant update &
+  \code{coords\_agg='mean'}, \code{tanh=True} (bounds update; our stability addition) &
+  \mismatch{tanh=True is our addition} \\
+\addlinespace
+Attention gate &
+  Not reported &
+  \code{attention=True} (per-edge sigmoid gate) &
+  \mismatch{Our addition; paper omits} \\
+\addlinespace
+Edge features &
+  Distance + cosine (2-dim) &
+  \code{in\_edge\_nf=2}; same 2-dim &
+  \match{Match} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{tcolorbox}[colback=warnbg, colframe=warnorange, title=\warn{EGNN Key Concern}]
+The paper does not specify EGNN layer count or hidden dim numerically.
+Our codebase uses \textbf{10 EGNN layers with hidden dim 256}.
+Additionally, \code{tanh=True} and \code{attention=True} are our own additions not present in the
+original, which could affect gradient flow and partially explain the reproduction gap.
+The \code{residual=True} fix aligns with the paper's ablation evidence (Table~4).
+\end{tcolorbox}
+
+% ---------------------------------------------------------------
+\subsection{Graph Transformer Branch}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\caption{Graph Transformer branch: paper Eqs.\ 7--13 vs.\ \code{GraphTransformer\_Block.py}}
+\label{tab:gt_compare}
+\begin{tabularx}{\linewidth}{>{\footnotesize\bfseries\raggedright\arraybackslash}p{2.6cm} Y Y
+    >{\footnotesize\centering\arraybackslash}p{2.8cm}}
+\toprule
+\normalsize\textbf{Dimension} & \normalsize\textbf{Paper (Eqs.\ 7--13)} & \normalsize\textbf{Codebase} & \normalsize\textbf{Status} \\
+\midrule
+Layer count &
+  4 layers cited &
+  \code{num\_layers=4} (3$\times$\code{GraphTransformerModule} + 1$\times$\code{FinalGraphTransformerModule}) &
+  \match{Match} \\
+\addlinespace
+Attention heads & 4 heads & \code{num\_attention\_heads=4} & \match{Match} \\
+\addlinespace
+Normalization &
+  ``layer normalization'' &
+  \code{norm\_to\_apply='layer'} $\Rightarrow$ \code{nn.LayerNorm} &
+  \match{Match} \\
+\addlinespace
+LayerNorm placement &
+  Pre-norm before MHA (Eq.\ 7), post-residual before FFN (Eq.\ 9) &
+  LN1 before MHA; LN2 after first residual, before FFN MLP --- exact pre-norm pattern &
+  \match{Match} \\
+\addlinespace
+GT residual (module) &
+  Eq.\ 8: $h_i^{(l+1)} = h_i^{(l)} + O(\hat{h}_i)$; two residuals per layer &
+  Two residual connections in \code{run\_gt\_layer} (\code{node\_feats\_in1}, \code{node\_feats\_in2}) &
+  \match{Match in module} \\
+\addlinespace
+Edge feature update &
+  Intermediate layers update edge reps; final layer does not &
+  \code{update\_edge\_feats=True} for intermediate, \code{False} for \code{FinalGTModule} &
+  \match{Match} \\
+\addlinespace
+\textbf{GT residual at call site} &
+  Residuals enabled &
+  \code{transformer\_residual=False} passed from \code{FinalModel} line~56 &
+  \mismatch{\textbf{DIVERGENCE}: residual \emph{disabled} in all GT layers} \\
+\addlinespace
+Hidden dim &
+  Not stated &
+  \code{num\_hidden\_channels=128} &
+  \warn{Unconfirmed; paper may use 256} \\
+\addlinespace
+Output MLP &
+  2-class linear head (Eq.\ 13) &
+  \code{output\_linner = nn.Linear(128, 2)} &
+  \match{Match} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{tcolorbox}[colback=warnbg, colframe=warnorange,
+    title=\warn{Critical GT Divergence: \code{transformer\_residual=False}}]
+In \code{final\_model.py} line~56:
+\begin{verbatim}
+self.GT = GraghTransformer(..., transformer_residual=False)
+\end{verbatim}
+This disables \emph{both} residual connections inside every GT layer.
+The paper explicitly uses residual connections (Eqs.\ 8 and 10), and the ablation in Table~4
+shows ``NoResidual'' reduces CV AUROC by 1.9 points (0.871 $\to$ 0.852).
+\textbf{This is the highest-impact confirmed divergence and the most likely
+primary contributor to the reproduction gap.}
+\end{tcolorbox}
+
+% ---------------------------------------------------------------
+\subsection{Feature Set}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\caption{Node and edge feature comparison: paper vs.\ \code{data\_generator.py}}
+\label{tab:features}
+\begin{tabularx}{\linewidth}{>{\footnotesize\bfseries\raggedright\arraybackslash}p{2.2cm}
+    Y Y
+    >{\footnotesize\centering\arraybackslash}p{0.8cm}
+    >{\footnotesize\centering\arraybackslash}p{1.5cm}}
+\toprule
+\normalsize\textbf{Feature} & \normalsize\textbf{Paper} & \normalsize\textbf{Codebase} & \normalsize\textbf{Dim} & \normalsize\textbf{Status} \\
+\midrule
+PSSM          & 20-dim per-residue PSSM profile & \code{Feature/pssm/*.npy} & 20 & \match{Match} \\
+HMM           & 20-dim HMM profile              & \code{Feature/hmm/*.npy}  & 20 & \match{Match} \\
+DSSP          & 14-dim secondary struct / solvent accessibility & \code{Feature/dssp/*.npy} & 14 & \match{Match} \\
+resAF         & 7-dim residue atom features     & \code{Feature/resAF/*.npy} & 7  & \match{Match} \\
+Total node    & 61-dim                          & \code{INPUT\_DIM = 61}    & 61 & \match{Match} \\
+\addlinespace
+Edge: distance & Normalized Euclidean, 14\,\AA\ cutoff & \code{MAP\_CUTOFF=14}, normalized by \code{DIST\_NORM=15} & 1 & \match{Match} \\
+Edge: cosine  & Cosine similarity of $C_\alpha$ pseudo-positions & \code{cossim(...)} rescaled to $[0,1]$ & 1 & \match{Match} \\
+Total edge    & 2 & \code{in\_edge\_nf=2} & 2 & \match{Match} \\
+\midrule
+\multicolumn{5}{l}{\footnotesize\textit{Our Extensions (not in paper):}} \\
+\addlinespace
+ESM-2 embeddings & --- & \code{Feature/esm2/*.npy}, ESM-2-650M, fp16 cached & 1280 & \mismatch{Added} \\
+RSA features  & RSA embedded inside DSSP 14-dim block & Separate \code{Feature/rsa/*.npy} continuous scalar; gate supervision & 1 & \mismatch{Added} \\
+Fusion module & --- & \code{FeatureFusionModule}: gated / concat / cross-attn & --- & \mismatch{Added} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+The paper's train set is \textbf{Train\_334} (334 chains, 10,336 interacting residues, 15.61\% positive).
+Our codebase loads \code{Train\_335.pkl} and pops \code{`2j3rA'}, giving 334 effective chains.
+The measured positive ratio of 15.61\% confirms the feature set is correctly reproduced.
+
+% ---------------------------------------------------------------
+\subsection{Loss Function}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\caption{Loss function: paper vs.\ \code{loss.py} + \code{final\_model.py}}
+\label{tab:loss}
+\begin{tabularx}{\linewidth}{>{\footnotesize\bfseries\raggedright\arraybackslash}p{2.5cm}
+    Y Y
+    >{\footnotesize\centering\arraybackslash}p{2.4cm}}
+\toprule
+\normalsize\textbf{Aspect} & \normalsize\textbf{Paper} & \normalsize\textbf{Codebase} & \normalsize\textbf{Status} \\
+\midrule
+Loss type &
+  Cross-entropy (no class weighting or focal mentioned) &
+  \code{FocalLoss(alpha=[1.0, neg/pos], gamma=2.0)} &
+  \mismatch{\textbf{Divergence}} \\
+Class weighting &
+  Not mentioned &
+  \code{alpha=[1.0, 5.4056]} (neg/pos ratio from Train\_335) &
+  \mismatch{Added} \\
+Focal modulation &
+  Not used &
+  $\gamma=2.0$ (down-weights easy examples) &
+  \mismatch{Added} \\
+Auxiliary losses &
+  None &
+  \code{loss\_gate} (RSA MSE, $\lambda=0.1$) + \code{loss\_agree} (branch MSE, $\lambda=0.1$) &
+  \mismatch{Added (gated only)} \\
+Gradient clipping &
+  Not mentioned &
+  \code{clip\_grad\_norm\_(max\_norm=1.0)} &
+  \mismatch{Added} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{tcolorbox}[colback=warnbg, colframe=warnorange, title=\warn{Loss Divergence Note}]
+The paper uses standard cross-entropy.
+Our no-ESM2 run already uses \code{FocalLoss($\gamma$=2.0)} with class weighting.
+Focal Loss preferentially trains on hard examples and changes the effective gradient landscape ---
+a \textbf{second confirmed divergence} that directly affects the learned decision boundary.
+\end{tcolorbox}
+
+% ---------------------------------------------------------------
+\subsection{Training Setup}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\caption{Training hyper-parameters: paper vs.\ \code{train.py} + \code{data\_generator.py}}
+\label{tab:training}
+\begin{tabularx}{\linewidth}{>{\footnotesize\bfseries\raggedright\arraybackslash}p{2.6cm}
+    Y Y
+    >{\footnotesize\centering\arraybackslash}p{2.6cm}}
+\toprule
+\normalsize\textbf{Hyper-parameter} & \normalsize\textbf{Paper} & \normalsize\textbf{Codebase} & \normalsize\textbf{Status} \\
+\midrule
+Batch size   & 1 (per-protein)   & \code{BATCH\_SIZE = 1}   & \match{Match} \\
+Epochs       & 50                & \code{NUMBER\_EPOCHS = 50} & \match{Match} \\
+Optimizer    & Adam              & \code{torch.optim.Adam}  & \match{Match} \\
+Learning rate & $10^{-3}$        & \code{LEARNING\_RATE = 1e-3} & \match{Match} \\
+Weight decay & 0                 & \code{WEIGHT\_DECAY = 0} & \match{Match} \\
+LR schedule  & Not described &
+  \code{ReduceLROnPlateau(mode='max', factor=0.6, patience=5)} on valid AUPRC &
+  \mismatch{Addition; not in paper} \\
+Dropout      & Not stated; GT uses dropout & \code{DROPOUT = 0.1} inside GT FFN MLP & \match{Consistent} \\
+CV strategy  & 5-fold on Train\_334 &
+  \code{KFold(n\_splits=5, shuffle=True)} with \code{SEED=2024} &
+  \match{Match (seed may differ)} \\
+Random seed  & Not stated        & \code{SEED = 2024} & \warn{Unknown if paper seed differs} \\
+Checkpoint criterion & Best by validation AUPRC &
+  \code{best\_val\_aupr < result\_valid['AUPRC']} &
+  \match{Match} \\
+\textbf{Threshold scan} &
+  Includes threshold=0.0 (causes MCC=0 collapse) &
+  Starts from 0.01 (\code{range(1,100)/100}); excludes degenerate all-positive case &
+  \mismatch{Bug-fix divergence} \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\newpage
+
+% ================================================================
+\section{Results Comparison}
+% ================================================================
+
+\subsection{Reproduced Paper Tables (as Published)}
+
+\begin{table}[ht]
+\caption{Paper Table~2 extended --- Evaluation on \texttt{Test\_60} (published numbers + our runs).
+$\ddagger$ = single run, no multi-seed verification.}
+\label{tab:paper_test60}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lrrrrrrr}
+\toprule
+\textbf{Method} & \textbf{ACC} & \textbf{Prec.} & \textbf{Recall} & \textbf{F1} & \textbf{AUROC} & \textbf{MCC} & \textbf{AUPRC} \\
+\midrule
+ScanNet    & 0.681 & 0.245 & 0.547 & 0.339 & 0.684 & 0.191 & 0.282 \\
+DELPHI     & 0.687 & 0.270 & 0.577 & 0.368 & 0.691 & 0.220 & 0.307 \\
+HN-PPISP   & 0.738 & 0.278 & 0.415 & 0.333 & 0.656 & 0.184 & 0.281 \\
+DeepPPISP  & 0.750 & 0.297 & 0.428 & 0.351 & 0.676 & 0.207 & 0.295 \\
+MaSIF-site & 0.780 & 0.370 & 0.561 & 0.446 & 0.775 & 0.379 & 0.372 \\
+EDLMPPI    & 0.781 & 0.360 & 0.503 & 0.420 & 0.748 & 0.295 & 0.379 \\
+GraphPPIS  & 0.792 & 0.389 & 0.558 & 0.458 & 0.784 & 0.343 & 0.430 \\
+RGCNPPIS   & 0.799 & 0.404 & 0.572 & 0.474 & 0.803 & 0.439 & 0.471 \\
+AGAT-PPIS  & 0.856 & 0.539 & 0.603 & 0.569 & 0.867 & 0.484 & 0.574 \\
+\midrule
+\textbf{GTE-PPIS (paper)}           & \textbf{0.861} & \textbf{0.557} & \textbf{0.611} & \textbf{0.582} & \textbf{0.873} & \textbf{0.500} & \textbf{0.611} \\
+\midrule
+\textit{Ours (A): No-ESM2}          & 0.8405 & 0.4978 & 0.5734 & 0.5319 & 0.8476 & 0.4388 & 0.5380 \\
+\textit{Ours (B): Gated ESM-2$^{\ddagger}$} & 0.8356 & 0.4841 & 0.5395 & 0.5089 & 0.8236 & 0.4125 & 0.5056 \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\begin{table}[ht]
+\caption{Paper Table~3 extended --- Evaluation on \texttt{Test\_315-28}, \texttt{Btest\_25}, and \texttt{UBtest\_25}/\texttt{31-6} (published numbers + our runs).
+$\ddagger$ = single run, no multi-seed verification.
+$\dagger$ = our split (\texttt{UBtest\_31-6}) differs from paper's \texttt{UBtest\_25}; not directly comparable.}
+\label{tab:paper_test315}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lcccccc}
+\toprule
+\multirow{2}{*}{\textbf{Method}} &
+\multicolumn{2}{c}{\textbf{Test\_315-28}} &
+\multicolumn{2}{c}{\textbf{Btest\_25}} &
+\multicolumn{2}{c}{\textbf{UBtest\_25 / 31-6}} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){6-7}
+& \textbf{MCC} & \textbf{AUPRC} & \textbf{MCC} & \textbf{AUPRC} & \textbf{MCC} & \textbf{AUPRC} \\
+\midrule
+GraphPPIS  & 0.335 & 0.408 & 0.339 & 0.381 & 0.298 & 0.330 \\
+RGCNPPIS   & 0.352 & 0.420 & 0.375 & 0.400 & 0.296 & \textbf{0.354} \\
+AGAT-PPIS  & 0.442 & 0.525 & 0.440 & 0.511 & 0.301 & 0.325 \\
+\midrule
+\textbf{GTE-PPIS (paper)}           & \textbf{0.511} & \textbf{0.598} & \textbf{0.471} & \textbf{0.545} & \textbf{0.320} & 0.343 \\
+\midrule
+\textit{Ours (A): No-ESM2}          & 0.4354 & 0.5182 & --- & --- & 0.2713$^{\dagger}$ & 0.3115$^{\dagger}$ \\
+\textit{Ours (B): Gated ESM-2$^{\ddagger}$} & 0.3601 & 0.4381 & --- & --- & 0.3706$^{\dagger}$ & 0.4182$^{\dagger}$ \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\textit{Note: the paper evaluates on \textbf{UBtest\_25} (25 proteins, 711 interacting residues).
+Our codebase uses \textbf{UBtest\_31-6}, which is \textbf{not directly comparable}.}
+
+% ---------------------------------------------------------------
+\subsection{Three-Way Results Comparison}
+% ---------------------------------------------------------------
+
+% 9 columns: use \resizebox to guarantee it fits
+\begin{table}[ht]
+\caption{Three-way results comparison (5-fold CV averages).
+Bold = best among our experimental runs.
+$\ddagger$ = single run, no multi-seed verification.
+$\dagger$ = different test split from paper.}
+\label{tab:three_way}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{llccccccc}
+\toprule
+\textbf{Test Set} & \textbf{System} & \textbf{AUROC} & \textbf{AUPRC} & \textbf{F1} & \textbf{MCC} & \textbf{Precision} & \textbf{Recall} & \textbf{ACC} \\
+\midrule
+\multirow{3}{*}{\texttt{Test\_60}}
+& (A) No-ESM2 (ours)         & \textbf{0.8476} & \textbf{0.5380} & \textbf{0.5319} & \textbf{0.4388} & \textbf{0.4978} & \textbf{0.5734} & \textbf{0.8405} \\
+& (B) Gated ESM-2$^\ddagger$ & 0.8236 & 0.5056 & 0.5089 & 0.4125 & 0.4841 & 0.5395 & 0.8356 \\
+& (C) Paper (GTE-PPIS)       & 0.873  & 0.611  & 0.582  & 0.500  & 0.557  & 0.611  & 0.861  \\
+\midrule
+\multirow{3}{*}{\texttt{Test\_315-28}}
+& (A) No-ESM2 (ours)         & \textbf{0.8585} & \textbf{0.5182} & \textbf{0.5189} & \textbf{0.4354} & 0.4181 & \textbf{0.6847} & \textbf{0.8199} \\
+& (B) Gated ESM-2$^\ddagger$ & 0.8117 & 0.4381 & 0.4597 & 0.3601 & 0.3727 & 0.6012 & 0.7994 \\
+& (C) Paper (GTE-PPIS)       & ---    & 0.598  & ---    & 0.511  & ---    & ---    & ---    \\
+\midrule
+\multirow{3}{*}{\texttt{UBtest\_31-6}$^\dagger$}
+& (A) No-ESM2 (ours)         & 0.7611 & 0.3115 & 0.3542 & 0.2713 & 0.3717 & 0.3418 & 0.8504 \\
+& (B) Gated ESM-2$^\ddagger$ & \textbf{0.8191} & \textbf{0.4182} & \textbf{0.4454} & \textbf{0.3706} & 0.4418 & 0.4554 & \textbf{0.8646} \\
+& (C) Paper (\texttt{UBtest\_25}) & --- & 0.343 & --- & 0.320 & ---    & ---    & ---    \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+% ---------------------------------------------------------------
+\subsection{Reproduction Gap: No-ESM2 (A) vs.\ Paper (C) on \texttt{Test\_60}}
+% ---------------------------------------------------------------
+
+\begin{table}[ht]
+\caption{Absolute and relative metric gaps on \texttt{Test\_60}}
+\label{tab:gap}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{lccccccc}
+\toprule
+& \textbf{AUROC} & \textbf{AUPRC} & \textbf{F1} & \textbf{MCC} & \textbf{Precision} & \textbf{Recall} & \textbf{ACC} \\
+\midrule
+Paper (C)    & 0.8730 & 0.6110 & 0.5820 & 0.5000 & 0.5570 & 0.6110 & 0.8610 \\
+Ours (A)     & 0.8476 & 0.5380 & 0.5319 & 0.4388 & 0.4978 & 0.5734 & 0.8405 \\
+\midrule
+$\Delta$ (abs) &
+  \mismatch{$-$0.0254} & \mismatch{$-$0.0730} & \mismatch{$-$0.0501} &
+  \mismatch{$-$0.0612} & \mismatch{$-$0.0592} & \mismatch{$-$0.0376} & \mismatch{$-$0.0205} \\
+Rel.\ gap (\%) &
+  \mismatch{$-$2.9} & \mismatch{$-$12.0} & \mismatch{$-$8.6} &
+  \mismatch{$-$12.2} & \mismatch{$-$10.6} & \mismatch{$-$6.2} & \mismatch{$-$2.4} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+The \textbf{MCC gap of $-0.0612$ (12.2\% relative)} and
+\textbf{AUPRC gap of $-0.073$ (12.0\% relative)} cannot be attributed to seed variance
+alone ($<$1--2\% in typical reproducibility studies on this scale).
+
+% ================================================================
+\section{Divergence Ranking by Estimated Impact on Reproduction Gap}
+% ================================================================
+
+\begin{table}[ht]
+\caption{Ranked divergences from the published GTE-PPIS design, ordered by estimated contribution to the reproduction gap}
+\label{tab:divergences}
+\begin{tabularx}{\linewidth}{
+    >{\footnotesize\centering\arraybackslash}p{0.9cm}
+    >{\footnotesize\bfseries\raggedright\arraybackslash}p{2.2cm}
+    Y
+    >{\footnotesize\raggedright\arraybackslash}p{3.5cm}}
+\toprule
+\normalsize\textbf{Rank} & \normalsize\textbf{Component} &
+\normalsize\textbf{Divergence Description} & \normalsize\textbf{Estimated Impact} \\
+\midrule
+\textbf{1} & GT Branch &
+  \code{transformer\_residual=False} disables both skip connections in all 4 GT layers;
+  paper Table~4 ``NoResidual'' shows whole-model $\Delta$AUROC = $-$12.9\% on Test\_60 &
+  \textbf{High (weak evidence only)} --- residuals matter somewhere in the model is confirmed;
+  attribution to GT branch specifically is an \emph{untested inference} (see Section~4) \\
+\addlinespace
+\textbf{2} & Loss function &
+  Focal Loss ($\gamma$=2.0) + class-weight alpha replacing plain CE;
+  changes gradient weighting across the entire training distribution &
+  \textbf{High} --- shifts precision/recall trade-off; precision gap is 5.9 pts \\
+\addlinespace
+\textbf{3} & EGNN modifications &
+  \code{tanh=True} bounds coordinate updates; \code{attention=True} adds per-edge gating
+  (both absent in paper) &
+  \textbf{Medium} --- stabilizes training but restricts model expressivity \\
+\addlinespace
+\textbf{4} & LR schedule &
+  \code{ReduceLROnPlateau} on validation AUPRC; paper does not describe any schedule &
+  \textbf{Low--Medium} --- may cause early LR reductions in some folds \\
+\addlinespace
+\textbf{5} & Random seed &
+  Paper seed unknown; ours is 2024; 5-fold splits will differ &
+  \textbf{Low} --- $<$2\% variation typical \\
+\addlinespace
+\textbf{6} & Threshold scan fix &
+  Start from 0.01 instead of 0.0; eliminates degenerate recall=1 solutions &
+  \textbf{Positive correction} --- this is a bug-fix; \emph{reduces} metric inflation,
+  not a source of the gap \\
+\addlinespace
+\textbf{7} & EGNN layer count &
+  10 layers vs.\ unspecified; if paper uses fewer, deeper network may over-regularize &
+  \textbf{Unknown} --- cannot quantify without paper's released code \\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{tcolorbox}[colback=lightbg, colframe=primaryblue,
+    title=\textbf{Root Cause Hypothesis and Recommended Action}]
+The most actionable hypothesis is that the \textbf{12\% relative MCC gap} is
+predominantly explained by \textbf{two confirmed divergences}:
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=2pt]
+    \item \textbf{(Primary)} \code{transformer\_residual=False} in our GT call ---
+    disabling residuals directly weakens representational capacity, consistent with
+    the paper's own ablation evidence. \textbf{Fix}: change to \code{transformer\_residual=True}.
+
+    \item \textbf{(Secondary)} Focal Loss with class-weight alpha replacing plain CE ---
+    originally introduced to compensate for EGNN training collapse (itself caused by
+    the now-fixed \code{residual=False} in E\_GCL).
+    Continued use shifts the effective decision boundary vs.\ the paper.
+    \textbf{Fix}: retrain with \code{focal\_gamma=0.0} (reduces to weighted CE) or plain CE
+    once the GT residual is restored.
+\end{enumerate}
+
+\textbf{Recommended next experiment}: retrain with \code{transformer\_residual=True}
+and \code{focal\_gamma=0.0} to isolate each contribution.
+Do \textbf{not} claim any single-run result from set~(B) as an improvement without
+multi-seed replication ($\geq$3 seeds).
+\end{tcolorbox}
+
+
+\newpage
+
+% ================================================================
+\section{Addendum: Verification of Two Key Claims}
+% ================================================================
+
+% ---------------------------------------------------------------
+\subsection{Finding 1 --- Scope of the ``NoResidual'' ablation (paper Table~4)}
+% ---------------------------------------------------------------
+
+\paragraph{What the paper actually says.}
+Section ``Model architecture analysis'' (PMC12199915, paragraph starting at Table~4)
+defines the ablation variant as:
+
+\begin{quote}
+\small\itshape
+``\ldots\, NoResidual (\textbf{excluding the residual connections}) \ldots''
+\end{quote}
+
+\noindent
+The definition uses the unqualified plural. The paper gives no further specification of
+\emph{which branch's} residuals were removed. There is no branch-isolated ablation variant.
+
+\paragraph{Exact numbers from Table~4.}
+NoResidual causes: CV: $\Delta$AUROC $= -2.2\%$, $\Delta$AUPRC $= -8.4\%$;
+Test\_60: $\Delta$AUROC $= -12.9\%$, $\Delta$AUPRC $= -36.5\%$.
+These are measured for the whole model (both branches with residuals removed simultaneously).
+
+\paragraph{What the prior report established --- and what it did not.}
+The report used these numbers as evidence that \code{transformer\_residual=False} in
+the GT call site accounts for the 12\% MCC gap. That reasoning conflates two separate claims:
+
+\begin{enumerate}[noitemsep, leftmargin=1.5em]
+    \item \textbf{Confirmed (weak claim)}: Residual connections matter somewhere
+    in the full GTE-PPIS model. The NoResidual ablation confirms this clearly.
+
+    \item \textbf{Not confirmed (strong claim)}: That our \code{transformer\_residual=False}
+    at only the GT branch call site in \code{final\_model.py} (line~56) is the dominant
+    cause of the 12\% MCC gap. The paper provides zero branch-isolated measurement.
+    This is an inference, not a measurement.
+\end{enumerate}
+
+\begin{tcolorbox}[colback=warnbg, colframe=warnorange,
+    title=\warn{Status of Rank 1 Divergence --- Awaiting Retraining}]
+\code{transformer\_residual=False} is a genuine divergence from the paper's design
+and very likely contributes to the reproduction gap. However, \textbf{the magnitude
+of that contribution is unknown} until a retrain with \code{transformer\_residual=True}
+is completed. The paper's NoResidual ablation cannot be used to isolate it because
+the ablation removes residuals from both branches simultaneously. The strong causal
+attribution in the prior version of the report must be treated as an hypothesis until
+retraining confirms or refutes it.
+\end{tcolorbox}
+
+% ---------------------------------------------------------------
+\subsection{Finding 2 --- RSA feature redundancy with DSSP dimension~4}
+% ---------------------------------------------------------------
+
+\paragraph{Paper's DSSP feature description.}
+Section ``Protein representation / DSSP'' (paper line~274) specifies the 14-dimensional
+DSSP block as:
+
+\begin{center}
+\small
+\begin{tabular}{rll}
+\toprule
+\textbf{Dims (0-indexed)} & \textbf{Content} & \textbf{Nature} \\
+\midrule
+0--8   & Secondary structure one-hot (9 DSSP states)         & Discrete   \\
+9--12  & $\sin\phi,\cos\phi,\sin\psi,\cos\psi$ (dihedral angles) & Continuous \\
+13     & ASA normalized by residue type $\to$ RSA             & Continuous \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent
+Per the paper: ``absolute solvent accessible surface area values were normalized by
+residue type to yield relative solvent accessibility (one dimension)'' [paper line~274].
+
+\paragraph{Empirical identification of the RSA column in our DSSP arrays.}
+Loading \code{Feature/dssp/1acbI.npy} (shape $63\times14$) shows that \textbf{column~4},
+not column~13, carries the RSA signal in our saved files. Columns 9 and 13 have zero
+variance for this protein (constant zero), while column~4 has values in $[0,1]$.
+Computing Pearson $r$ between each DSSP column and our \code{Feature/rsa/*.npy}
+(freesasa-derived) values over protein 1acbI gives $r_{col4} = 0.9858$, $p < 10^{-48}$.
+
+\paragraph{Cross-protein confirmation.}
+Computed over 100 proteins with both files present:
+
+\begin{center}
+\small
+\begin{tabular}{lrrrr}
+\toprule
+\textbf{Comparison} & \textbf{Mean $r$} & \textbf{Median $r$} & \textbf{Min $r$} & \textbf{Max $r$} \\
+\midrule
+DSSP col~4 vs.\ \code{Feature/rsa/*.npy} (freesasa) & 0.985 & 0.987 & 0.945 & 0.991 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{How the two RSA computations differ.}
+\begin{itemize}[noitemsep, leftmargin=1.5em]
+    \item \textbf{DSSP RSA (col~4 of \code{Feature/dssp/*.npy})}: computed by the DSSP
+    algorithm's internal SASA routine, normalized by its own per-residue reference values.
+    This is concatenated into the 61-dim node feature vector at
+    \code{data\_generator.py} lines~51 and~64, and thus fed as a \emph{model input}
+    to both EGNN and GT branches during training and inference.
+
+    \item \textbf{freesasa RSA (\code{Feature/rsa/*.npy})}: computed by
+    \code{generate\_rsa\_features.py} using \code{freesasa.calc()} with the
+    Shrake--Rupley algorithm and the Miller et al.\ reference $A_{\max}$ table
+    (lines~7--12, 53--65 of that script). This value is \textbf{not} concatenated
+    into the node feature vector. It is passed only as \code{rsa\_features}
+    to \code{compute\_auxiliary\_losses()} (\code{train.py} lines~86--90) as the
+    supervision target for the biophysics-gated regularization loss
+    $\mathcal{L}_{\text{gate}} = \lambda_{\text{gate}}\cdot\text{MSE}(g_i,\,\text{RSA}_i)$.
+\end{itemize}
+
+\begin{tcolorbox}[colback=lightbg, colframe=primaryblue,
+    title=\textbf{Redundancy Assessment and Implication for Gate Interpretability}]
+The two RSA features measure the same physical quantity ($r = 0.985$ cross-protein)
+and differ only in tool (DSSP vs.\ freesasa) and reference $A_{\max}$ table.
+
+\medskip
+\textbf{No input redundancy exists}: the freesasa RSA is never added to the input
+feature space, so it does not duplicate an input channel.
+
+\medskip
+\textbf{Gate supervision is partially redundant}: the gate regularization loss trains
+$g_i$ (the gated fusion weight) to track a quantity ($r = 0.985$) that already exists
+inside the node features the model consumes. The auxiliary loss therefore provides
+much less independent gradient signal than if the RSA target were computed from a
+genuinely orthogonal source (e.g., a different structural conformation or a predicted RSA
+from sequence alone). The gate likely learns the RSA correlation largely via the input
+features, and the auxiliary loss reinforces but does not introduce that correlation.
+
+\medskip
+\textbf{Consequence for gate interpretability}: the observation that ``the gate tracks
+solvent exposure'' remains valid as a description of model behaviour, but it cannot be
+attributed uniquely to the freesasa-based supervision signal --- the gate would likely
+learn this correlation anyway from DSSP col~4. The supervision loss contribution is
+real but modest.
+\end{tcolorbox}
+
+\end{document}

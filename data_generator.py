@@ -91,7 +91,7 @@ def load_graph(sequence_name):
 
 
 def graph_collate(samples):
-    sequence_name, sequence, label, node_features, G, adj_matrix, xyz_feats, edges, edge_att, edge_feat, plm_features = map(list, zip(*samples))
+    sequence_name, sequence, label, node_features, G, adj_matrix, xyz_feats, edges, edge_att, edge_feat, plm_features, rsa_features = map(list, zip(*samples))
     label = torch.Tensor(label)
     G_batch = dgl.batch(G)
     node_features = torch.cat(node_features)
@@ -103,7 +103,8 @@ def graph_collate(samples):
     edge_feat = [torch.tensor(ef) if isinstance(ef, np.ndarray) else ef for ef in edge_feat]  # 转换为 Tensor
     edge_feat = torch.cat(edge_feat)
     plm_features = torch.cat(plm_features)
-    return sequence_name, sequence, label, node_features, G_batch, adj_matrix, xyz_feats, edges, edge_att, edge_feat, plm_features
+    rsa_features = torch.cat(rsa_features)
+    return sequence_name, sequence, label, node_features, G_batch, adj_matrix, xyz_feats, edges, edge_att, edge_feat, plm_features, rsa_features
 
 
 class ProDataset(Dataset):
@@ -150,6 +151,20 @@ class ProDataset(Dataset):
         else:
             plm_features = torch.zeros((len(sequence), 1280), dtype=torch.float32)
 
+        # Load continuous RSA features
+        rsa_path = os.path.join(Feature_Path, "rsa", f"{sequence_name}.npy")
+        if os.path.exists(rsa_path):
+            rsa_features = np.load(rsa_path).astype(np.float32)
+            seq_len = len(sequence)
+            if len(rsa_features) != seq_len:
+                if len(rsa_features) > seq_len:
+                    rsa_features = rsa_features[:seq_len]
+                else:
+                    rsa_features = np.concatenate([rsa_features, np.full((seq_len - len(rsa_features),), 0.5, dtype=np.float32)])
+        else:
+            rsa_features = np.full((len(sequence),), 0.5, dtype=np.float32)
+        rsa_features = torch.from_numpy(rsa_features)
+
         radius_index_list = cal_edges(sequence_name, MAP_CUTOFF)
         edges = [radius_index_list[0], radius_index_list[1]]
         edge_feat, edge_att = self.cal_edge_attr(radius_index_list, pos)
@@ -163,7 +178,7 @@ class ProDataset(Dataset):
 
         adj_matrix = load_graph(sequence_name)
 
-        return sequence_name, sequence, label, node_features, G, adj_matrix, xyz_feats, edges, edge_att, edge_feat, plm_features
+        return sequence_name, sequence, label, node_features, G, adj_matrix, xyz_feats, edges, edge_att, edge_feat, plm_features, rsa_features
 
     def __len__(self):
         return len(self.labels)

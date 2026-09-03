@@ -4,7 +4,6 @@
 
 ---
 
-## Summary Table
 
 | Rank | Idea | Novelty Confidence | Implementation Effort | Publication Strength |
 |:---:|:---|:---:|:---:|:---:|

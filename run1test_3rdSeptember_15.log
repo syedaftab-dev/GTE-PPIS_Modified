@@ -1,0 +1,318 @@
+Script started on 2026-09-03 15:24:08+05:30 [TERM="xterm-256color" TTY="/dev/pts/4" COLUMNS="185" LINES="45"]
+[?2004h]0;pranav@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC: ~/PRANAV/GTE-PPIS[01;32mpranav@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC[00m:[01;34m~/PRANAV/GTE-PPIS[00m$ [7msource venv/bin/activate && python test.py --fusion_mode none --d_proj 128 --model_dir Log/fusion_none_d128_2026-09-03[27m[7m-[27m[7m13-10-36/model/[27m[A]0;pranav@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC: ~/PRANAV/GTE-PPIS[01;32mpranav@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC[00m:[01;34m~/PRANAV/GTE-PPIS[00m$ source venv/bin/activate && python test.py --fusion_mode none --d_proj 128 --model_dir Log/fusion_none_d128_2026-09-03-13-10-36/model/
+[?2004l==============================================
+Evaluate on Test_60
+==============================================
+Fold1_best_model.pkl
+Validation threshold for Fold1_best_model.pkl (Fold 1): 0.69 (val F1: 0.5666)
+========== Evaluate Test set ==========
+Test loss:  0.5034222332139809
+Test binary acc:  0.8368837492391966
+Test precision: 0.4864652805021577
+Test recall:  0.5975903614457831
+Test f1:  0.5363321799307958
+Test AUROC:  0.855216663927369
+Test MCC:  0.44204289737181013
+Test AUPRC:  0.5482036420553265
+Threshold:  0.69
+
+Fold2_best_model.pkl
+Validation threshold for Fold2_best_model.pkl (Fold 2): 0.74 (val F1: 0.5274)
+========== Evaluate Test set ==========
+Test loss:  0.5039829649031162
+Test binary acc:  0.848980523432745
+Test precision: 0.5202156334231806
+Test recall:  0.5580722891566265
+Test f1:  0.5384794233899093
+Test AUROC:  0.8567749070180803
+Test MCC:  0.44872712182723073
+Test AUPRC:  0.5592444289779187
+Threshold:  0.74
+
+Fold3_best_model.pkl
+Validation threshold for Fold3_best_model.pkl (Fold 3): 0.66 (val F1: 0.5449)
+========== Evaluate Test set ==========
+Test loss:  0.4870847098529339
+Test binary acc:  0.8326993304930006
+Test precision: 0.47891156462585033
+Test recall:  0.6785542168674699
+Test f1:  0.5615154536390827
+Test AUROC:  0.8628979881945344
+Test MCC:  0.4726269302088875
+Test AUPRC:  0.5689202818153293
+Threshold:  0.66
+
+Fold4_best_model.pkl
+Validation threshold for Fold4_best_model.pkl (Fold 4): 0.66 (val F1: 0.5205)
+========== Evaluate Test set ==========
+Test loss:  0.6872944017251332
+Test binary acc:  0.8462416311625076
+Test precision: 0.512881679389313
+Test recall:  0.5180722891566265
+Test f1:  0.5154639175257731
+Test AUROC:  0.8347312749053853
+Test MCC:  0.42409659111222914
+Test AUPRC:  0.5200659921149062
+Threshold:  0.66
+
+Fold5_best_model.pkl
+Validation threshold for Fold5_best_model.pkl (Fold 5): 0.74 (val F1: 0.5484)
+========== Evaluate Test set ==========
+Test loss:  0.5286061937610308
+Test binary acc:  0.8543061472915399
+Test precision: 0.5367985280588776
+Test recall:  0.5624096385542169
+Test f1:  0.5493057189927042
+Test AUROC:  0.8586611474355277
+Test MCC:  0.46264922496782673
+Test AUPRC:  0.5626069661402677
+Threshold:  0.74
+
+Full_model_36.pkl
+Using average fold validation threshold for Full_model_36.pkl: 0.70
+========== Evaluate Test set ==========
+Test loss:  0.9026959538459778
+Test binary acc:  0.8566646378575776
+Test precision: 0.593170731707317
+Test recall:  0.2930120481927711
+Test f1:  0.39225806451612905
+Test AUROC:  0.8192448464015969
+Test MCC:  0.34720464643149107
+Test AUPRC:  0.4953091771017994
+Threshold:  0.6980000000000001
+
+Full_model_45.pkl
+Using average fold validation threshold for Full_model_45.pkl: 0.70
+========== Evaluate Test set ==========
+Test loss:  0.5392633505165577
+Test binary acc:  0.8345252586731589
+Test precision: 0.47795414462081126
+Test recall:  0.5224096385542168
+Test f1:  0.49919410545705734
+Test AUROC:  0.8332409301130805
+Test MCC:  0.4008850506645074
+Test AUPRC:  0.5027630390839262
+Threshold:  0.6980000000000001
+
+========== Cross-Validation Results ==========
+Average binary acc:  0.8438222763237979
+Average precision:  0.5070545371998758
+Average recall:  0.5829397590361446
+Average f1:  0.540219338695653
+Average AUROC:  0.8536563962961793
+Average MCC:  0.4500285530975969
+Average AUPRC:  0.5518082622207497
+Average threshold:  0.6980000000000001
+
+==============================================
+Evaluate on Test_315-28
+==============================================
+Fold1_best_model.pkl
+Validation threshold for Fold1_best_model.pkl (Fold 1): 0.69 (val F1: 0.5666)
+========== Evaluate Test set ==========
+Test loss:  0.472746949318394
+Test binary acc:  0.8110176228965151
+Test precision: 0.4056528662420382
+Test recall:  0.7137520429605416
+Test f1:  0.5173026482781962
+Test AUROC:  0.8622982213833543
+Test MCC:  0.4360334410400949
+Test AUPRC:  0.533639887054598
+Threshold:  0.69
+
+Fold2_best_model.pkl
+Validation threshold for Fold2_best_model.pkl (Fold 2): 0.74 (val F1: 0.5274)
+========== Evaluate Test set ==========
+Test loss:  0.48524131633678796
+Test binary acc:  0.8284417649397111
+Test precision: 0.43301435406698563
+Test recall:  0.6761615689936961
+Test f1:  0.5279372892170268
+Test AUROC:  0.8634329429677206
+Test MCC:  0.4451227499995737
+Test AUPRC:  0.5286329302294999
+Threshold:  0.74
+
+Fold3_best_model.pkl
+Validation threshold for Fold3_best_model.pkl (Fold 3): 0.66 (val F1: 0.5449)
+========== Evaluate Test set ==========
+Test loss:  0.47295833983903146
+Test binary acc:  0.7945044388498741
+Test precision: 0.38872472333275393
+Test recall:  0.7832127013775391
+Test f1:  0.5195740561471442
+Test AUROC:  0.873974202512521
+Test MCC:  0.4475897993961394
+Test AUPRC:  0.5497304714998603
+Threshold:  0.66
+
+Fold4_best_model.pkl
+Validation threshold for Fold4_best_model.pkl (Fold 4): 0.66 (val F1: 0.5205)
+========== Evaluate Test set ==========
+Test loss:  0.5906691071463794
+Test binary acc:  0.83461971644362
+Test precision: 0.44131999007526257
+Test recall:  0.6229278543077282
+Test f1:  0.5166287457036356
+Test AUROC:  0.8451169823755263
+Test MCC:  0.42944428402161955
+Test AUPRC:  0.5000247240571916
+Threshold:  0.66
+
+Fold5_best_model.pkl
+Validation threshold for Fold5_best_model.pkl (Fold 5): 0.74 (val F1: 0.5484)
+========== Evaluate Test set ==========
+Test loss:  0.46430578884970436
+Test binary acc:  0.8367563270173579
+Test precision: 0.4504075042288175
+Test recall:  0.6838664487508755
+Test f1:  0.5431114407565363
+Test AUROC:  0.8740972398069186
+Test MCC:  0.4633252820017151
+Test AUPRC:  0.5563066390810361
+Threshold:  0.74
+
+Full_model_36.pkl
+Using average fold validation threshold for Full_model_36.pkl: 0.70
+========== Evaluate Test set ==========
+Test loss:  0.751876667713039
+Test binary acc:  0.8683085994434875
+Test precision: 0.5461226938653068
+Test recall:  0.4250525332710717
+Test f1:  0.47804109499113767
+Test AUROC:  0.8340236069281501
+Test MCC:  0.40818307508043966
+Test AUPRC:  0.49551096807840306
+Threshold:  0.6980000000000001
+
+Full_model_45.pkl
+Using average fold validation threshold for Full_model_45.pkl: 0.70
+========== Evaluate Test set ==========
+Test loss:  0.48303217401903265
+Test binary acc:  0.8377832251225653
+Test precision: 0.44688581314878895
+Test recall:  0.6030819519028718
+Test f1:  0.513365795488423
+Test AUROC:  0.8490500703846013
+Test MCC:  0.425380824179826
+Test AUPRC:  0.5129660561471912
+Threshold:  0.6980000000000001
+
+========== Cross-Validation Results ==========
+Average binary acc:  0.8210679740294158
+Average precision:  0.42382388758917156
+Average recall:  0.6959841232780761
+Average f1:  0.5249108360205078
+Average AUROC:  0.8637839178092082
+Average MCC:  0.4443031112918286
+Average AUPRC:  0.5336669303844372
+Average threshold:  0.6980000000000001
+
+==============================================
+Evaluate on UBtest_31-6
+==============================================
+Fold1_best_model.pkl
+Validation threshold for Fold1_best_model.pkl (Fold 1): 0.69 (val F1: 0.5666)
+========== Evaluate Test set ==========
+Test loss:  0.5772451972961425
+Test binary acc:  0.8463748521210073
+Test precision: 0.3632596685082873
+Test recall:  0.369901547116737
+Test f1:  0.36655052264808363
+Test AUROC:  0.7625344930900351
+Test MCC:  0.2791612703060651
+Test AUPRC:  0.31350221568628595
+Threshold:  0.69
+
+Fold2_best_model.pkl
+Validation threshold for Fold2_best_model.pkl (Fold 2): 0.74 (val F1: 0.5274)
+========== Evaluate Test set ==========
+Test loss:  0.6018754780292511
+Test binary acc:  0.8620922764914652
+Test precision: 0.40707964601769914
+Test recall:  0.3234880450070324
+Test f1:  0.3605015673981191
+Test AUROC:  0.760470716197312
+Test MCC:  0.2867066377384112
+Test AUPRC:  0.3217703510496593
+Threshold:  0.74
+
+Fold3_best_model.pkl
+Validation threshold for Fold3_best_model.pkl (Fold 3): 0.66 (val F1: 0.5449)
+========== Evaluate Test set ==========
+Test loss:  0.5806514048576354
+Test binary acc:  0.8318404596924117
+Test precision: 0.3463203463203463
+Test recall:  0.450070323488045
+Test f1:  0.39143730886850153
+Test AUROC:  0.7657914458757692
+Test MCC:  0.2992140897384595
+Test AUPRC:  0.32456198930392594
+Threshold:  0.66
+
+Fold4_best_model.pkl
+Validation threshold for Fold4_best_model.pkl (Fold 4): 0.66 (val F1: 0.5205)
+========== Evaluate Test set ==========
+Test loss:  0.8474683064222336
+Test binary acc:  0.8546560757140442
+Test precision: 0.35247524752475246
+Test recall:  0.25035161744022505
+Test f1:  0.29276315789473684
+Test AUROC:  0.7479062349890556
+Test MCC:  0.21825037629236693
+Test AUPRC:  0.28778342613980945
+Threshold:  0.66
+
+Fold5_best_model.pkl
+Validation threshold for Fold5_best_model.pkl (Fold 5): 0.74 (val F1: 0.5484)
+========== Evaluate Test set ==========
+Test loss:  0.6940934890508652
+Test binary acc:  0.8539800574615515
+Test precision: 0.3853073463268366
+Test recall:  0.36146272855133615
+Test f1:  0.37300435413642963
+Test AUROC:  0.7622660859237934
+Test MCC:  0.2906575182426886
+Test AUPRC:  0.32605719369569025
+Threshold:  0.74
+
+Full_model_36.pkl
+Using average fold validation threshold for Full_model_36.pkl: 0.70
+========== Evaluate Test set ==========
+Test loss:  1.118298307657242
+Test binary acc:  0.8707115092107487
+Test precision: 0.35638297872340424
+Test recall:  0.09423347398030943
+Test f1:  0.14905450500556172
+Test AUROC:  0.7139128118426591
+Test MCC:  0.13160494736077824
+Test AUPRC:  0.2537768012809619
+Threshold:  0.6980000000000001
+
+Full_model_45.pkl
+Using average fold validation threshold for Full_model_45.pkl: 0.70
+========== Evaluate Test set ==========
+Test loss:  0.6186612498760223
+Test binary acc:  0.8482339023153626
+Test precision: 0.3593984962406015
+Test recall:  0.3361462728551336
+Test f1:  0.34738372093023256
+Test AUROC:  0.7416110265500211
+Test MCC:  0.26181235707634987
+Test AUPRC:  0.2884107042987251
+Threshold:  0.6980000000000001
+
+========== Cross-Validation Results ==========
+Average binary acc:  0.8497887442960959
+Average precision:  0.3708884509395844
+Average recall:  0.35105485232067507
+Average f1:  0.3568513821891741
+Average AUROC:  0.7597937952151931
+Average MCC:  0.27479797846359827
+Average AUPRC:  0.3147350351750742
+Average threshold:  0.6980000000000001
+
+[?2004h(venv) ]0;pranav@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC: ~/PRANAV/GTE-PPIS[01;32mpranav@cse-sdpl-HP-Z4-G5-Workstation-Desktop-PC[00m:[01;34m~/PRANAV/GTE-PPIS[00m$ exit
+[?2004lexit
+
+Script done on 2026-09-03 15:26:27+05:30 [COMMAND_EXIT_CODE="0"]

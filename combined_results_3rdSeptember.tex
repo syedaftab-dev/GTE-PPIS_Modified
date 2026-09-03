@@ -1,0 +1,341 @@
+\documentclass[10pt, a4paper]{article}
+
+% ---------------------------------------------------------------
+% Packages
+% ---------------------------------------------------------------
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=0.75in, top=1.0in, bottom=1.0in]{geometry}
+\usepackage{booktabs}
+\usepackage{amsmath, amssymb}
+\usepackage[table]{xcolor}      % xcolor with table option loads colortbl
+\usepackage{hyperref}
+\usepackage{fancyhdr}
+\usepackage{array}
+\usepackage{tcolorbox}
+\usepackage{enumitem}
+\usepackage{caption}
+\usepackage{multirow}
+\usepackage{tabularx}
+\usepackage{adjustbox}
+
+% ---------------------------------------------------------------
+% Colours
+% ---------------------------------------------------------------
+\definecolor{primaryblue}{RGB}{24, 76, 120}
+\definecolor{secondaryblue}{RGB}{41, 128, 185}
+\definecolor{warnorange}{RGB}{200, 100, 20}
+\definecolor{okgreen}{RGB}{30, 130, 60}
+\definecolor{lightbg}{RGB}{235, 243, 255}
+\definecolor{warnbg}{RGB}{255, 248, 230}
+\definecolor{paperbg}{RGB}{230, 245, 230}
+\definecolor{avgbg}{RGB}{240, 240, 255}
+
+\hypersetup{colorlinks=true, linkcolor=secondaryblue,
+            citecolor=secondaryblue, urlcolor=secondaryblue}
+
+% ---------------------------------------------------------------
+% Header / Footer
+% ---------------------------------------------------------------
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small\textbf{GTE-PPIS --- Combined Results: September 3, 2026}}
+\rhead{\small\textbf{Run~1 (res=T,$\,\gamma$=2) \quad Run~3 (res=T,$\,\gamma$=0)}}
+\lfoot{\small\texttt{run1test\_3rdSeptember\_15.log} \enspace
+             \texttt{run2test\_3rdSeptember\_18.log}}
+\rfoot{\small Page~\thepage}
+\renewcommand{\headrulewidth}{0.5pt}
+\renewcommand{\footrulewidth}{0.5pt}
+
+% ---------------------------------------------------------------
+% Helpers
+% ---------------------------------------------------------------
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{5pt}
+\captionsetup{font=small, labelfont=bf}
+\newcommand{\code}[1]{\texttt{\small #1}}
+\newcommand{\bad}[1]{\textcolor{warnorange}{\textbf{#1}}}
+\newcommand{\good}[1]{\textcolor{okgreen}{\textbf{#1}}}
+\newcommand{\warn}[1]{\textcolor{warnorange}{\textbf{#1}}}
+\newcommand{\NA}{$-\!-\!-$}
+
+% Compact numeric column (centered, footnotesize)
+\newcolumntype{N}{>{\footnotesize\centering\arraybackslash}c}
+% Label column (left-aligned)
+\newcolumntype{L}{>{\footnotesize\raggedright\arraybackslash}l}
+
+% ================================================================
+\begin{document}
+% ================================================================
+
+\begin{center}
+    {\LARGE\bfseries\color{primaryblue}
+        GTE-PPIS: Combined Results --- September 3, 2026}\\[4pt]
+    {\large\color{secondaryblue}
+        Run~1 \textnormal{(res=True, $\gamma$=2.0)} \quad
+        Run~3 \textnormal{(res=True, $\gamma$=0.0)}\\
+        Per-Fold + CV Averages on Test\_60, Test\_315-28, UBtest\_31-6}\\[6pt]
+    \rule{\textwidth}{1pt}\\[3pt]
+    {\small All runs: \code{--fusion\_mode none}, 5-fold CV, Train\_334, 50 epochs,
+    Adam $10^{-3}$, \code{ReduceLROnPlateau}, \code{SEED=2024}.
+    Paper's published GTE-PPIS is the reference target throughout.}
+    \rule{\textwidth}{0.5pt}
+\end{center}
+
+% ================================================================
+\section*{Run Identification}
+% ================================================================
+
+\begin{center}
+\footnotesize
+\begin{tabular}{LNNLL}
+\toprule
+\normalsize\textbf{Label} &
+\normalsize\textbf{res.} &
+\normalsize\textbf{$\gamma$} &
+\normalsize\textbf{Trained} &
+\normalsize\textbf{Log file} \\
+\midrule
+Run~1 & True & 2.0 & Sep~3 13:10 IST & \texttt{run1test\_3rdSeptember\_15.log} \\
+Run~3\textsuperscript{$\star$} & True & 0.0 & Sep~3 16:02 IST & \texttt{run2test\_3rdSeptember\_18.log} \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+{\footnotesize $\star$ Intended as Run~2 (loss-only isolation with res=False), but the uncommitted
+\code{transformer\_residual=True} edit was active at launch --- see \texttt{arch\_results\_comparison.tex}
+Section~4.1 for git-state audit. Run~2 (res=False, $\gamma$=0.0) was \warn{never executed}.}
+
+% ================================================================
+\section{Test\_60 --- Per-Fold Results}
+% ================================================================
+
+\begin{table}[ht]
+\caption{Per-fold results on \texttt{Test\_60}.
+\colorbox{avgbg}{\strut Shaded} rows = 5-fold CV average.
+\colorbox{paperbg}{\strut Green} row = published paper target.}
+\label{tab:fold_t60}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{L L N N N N N N N N}
+\toprule
+\textbf{Run} & \textbf{Fold} &
+\textbf{Thr.} & \textbf{ACC} & \textbf{Prec.} & \textbf{Recall} &
+\textbf{F1} & \textbf{AUROC} & \textbf{MCC} & \textbf{AUPRC} \\
+\midrule
+\rowcolor{paperbg}
+\textit{Paper} & \textit{GTE-PPIS} & \NA & 0.8610 & 0.5570 & 0.6110 & 0.5820 & 0.8730 & 0.5000 & 0.6110 \\
+\midrule
+Run~1 & Fold 1 & 0.69 & 0.8369 & 0.4865 & 0.5976 & 0.5363 & 0.8552 & 0.4420 & 0.5482 \\
+Run~1 & Fold 2 & 0.74 & 0.8490 & 0.5202 & 0.5581 & 0.5385 & 0.8568 & 0.4487 & 0.5592 \\
+Run~1 & Fold 3 & 0.66 & 0.8327 & 0.4789 & 0.6786 & 0.5615 & 0.8629 & 0.4726 & 0.5689 \\
+Run~1 & Fold 4 & 0.66 & 0.8462 & 0.5129 & 0.5181 & 0.5155 & 0.8347 & 0.4241 & 0.5201 \\
+Run~1 & Fold 5 & 0.74 & 0.8543 & 0.5368 & 0.5624 & 0.5493 & 0.8587 & 0.4626 & 0.5626 \\
+\rowcolor{avgbg}
+\textbf{Run~1} & \textbf{CV Avg} & \textbf{0.70} & \textbf{0.8438} & \textbf{0.5071} & \textbf{0.5829} & \textbf{0.5402} & \textbf{0.8537} & \textbf{0.4500} & \textbf{0.5518} \\
+\midrule
+Run~3 & Fold 1 & 0.67 & 0.8446 & 0.5067 & 0.5976 & 0.5484 & 0.8564 & 0.4576 & 0.5619 \\
+Run~3 & Fold 2 & 0.67 & 0.8586 & 0.5566 & 0.5142 & 0.5346 & 0.8577 & 0.4519 & 0.5627 \\
+Run~3 & Fold 3 & 0.66 & 0.8336 & 0.4799 & 0.6434 & 0.5497 & 0.8584 & 0.4576 & 0.5632 \\
+Run~3 & Fold 4 & 0.75 & 0.8442 & 0.5051 & 0.6386 & 0.5641 & 0.8662 & 0.4756 & 0.5852 \\
+Run~3 & Fold 5 & 0.70 & 0.8437 & 0.5049 & 0.5219 & 0.5133 & 0.8461 & 0.4203 & 0.5388 \\
+\rowcolor{avgbg}
+\textbf{Run~3} & \textbf{CV Avg} & \textbf{0.69} & \textbf{0.8450} & \textbf{0.5107} & \textbf{0.5831} & \textbf{0.5420} & \textbf{0.8570} & \textbf{0.4526} & \textbf{0.5624} \\
+\midrule
+\good{$\Delta$} & \good{Run~3 $-$ Run~1} & & \good{$+$0.0012} & \good{$+$0.0036} & \good{$+$0.0002} & \good{$+$0.0018} & \good{$+$0.0033} & \good{$+$0.0026} & \good{$+$0.0106} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+% ================================================================
+\section{Test\_315-28 --- Per-Fold Results}
+% ================================================================
+
+\begin{table}[ht]
+\caption{Per-fold results on \texttt{Test\_315-28}.
+Paper (Table~3) reports only MCC=0.511 and AUPRC=0.598 for this set.}
+\label{tab:fold_t315}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{L L N N N N N N N N}
+\toprule
+\textbf{Run} & \textbf{Fold} &
+\textbf{Thr.} & \textbf{ACC} & \textbf{Prec.} & \textbf{Recall} &
+\textbf{F1} & \textbf{AUROC} & \textbf{MCC} & \textbf{AUPRC} \\
+\midrule
+\rowcolor{paperbg}
+\textit{Paper} & \textit{GTE-PPIS} & \NA & \NA & \NA & \NA & \NA & \NA & 0.5110 & 0.5980 \\
+\midrule
+Run~1 & Fold 1 & 0.69 & 0.8110 & 0.4057 & 0.7138 & 0.5173 & 0.8623 & 0.4360 & 0.5336 \\
+Run~1 & Fold 2 & 0.74 & 0.8284 & 0.4330 & 0.6762 & 0.5279 & 0.8634 & 0.4451 & 0.5286 \\
+Run~1 & Fold 3 & 0.66 & 0.7945 & 0.3887 & 0.7832 & 0.5196 & 0.8740 & 0.4476 & 0.5497 \\
+Run~1 & Fold 4 & 0.66 & 0.8346 & 0.4413 & 0.6229 & 0.5166 & 0.8451 & 0.4294 & 0.5000 \\
+Run~1 & Fold 5 & 0.74 & 0.8368 & 0.4504 & 0.6839 & 0.5431 & 0.8741 & 0.4633 & 0.5563 \\
+\rowcolor{avgbg}
+\textbf{Run~1} & \textbf{CV Avg} & \textbf{0.70} & \textbf{0.8211} & \textbf{0.4238} & \textbf{0.6960} & \textbf{0.5249} & \textbf{0.8638} & \textbf{0.4443} & \textbf{0.5337} \\
+\midrule
+Run~3 & Fold 1 & 0.67 & 0.8189 & 0.4199 & 0.7236 & 0.5314 & 0.8708 & 0.4532 & 0.5498 \\
+Run~3 & Fold 2 & 0.67 & 0.8449 & 0.4663 & 0.6429 & 0.5405 & 0.8688 & 0.4585 & 0.5428 \\
+Run~3 & Fold 3 & 0.66 & 0.8002 & 0.3938 & 0.7569 & 0.5180 & 0.8677 & 0.4421 & 0.5408 \\
+Run~3 & Fold 4 & 0.75 & 0.8086 & 0.4050 & 0.7442 & 0.5245 & 0.8705 & 0.4478 & 0.5383 \\
+Run~3 & Fold 5 & 0.70 & 0.8417 & 0.4591 & 0.6498 & 0.5380 & 0.8644 & 0.4557 & 0.5398 \\
+\rowcolor{avgbg}
+\textbf{Run~3} & \textbf{CV Avg} & \textbf{0.69} & \textbf{0.8229} & \textbf{0.4288} & \textbf{0.7035} & \textbf{0.5305} & \textbf{0.8684} & \textbf{0.4515} & \textbf{0.5423} \\
+\midrule
+\good{$\Delta$} & \good{Run~3 $-$ Run~1} & & \good{$+$0.0018} & \good{$+$0.0050} & \good{$+$0.0075} & \good{$+$0.0056} & \good{$+$0.0046} & \good{$+$0.0072} & \good{$+$0.0086} \\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+% ================================================================
+\section{UBtest\_31-6 --- Per-Fold Results}
+% ================================================================
+
+\begin{table}[ht]
+\caption{Per-fold results on \texttt{UBtest\_31-6}.
+\textbf{Not directly comparable to paper} which evaluates on \texttt{UBtest\_25}
+(different protein subset; paper: MCC=0.320, AUPRC=0.343). Shown for internal tracking only.}
+\label{tab:fold_ub}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{L L N N N N N N N N}
+\toprule
+\textbf{Run} & \textbf{Fold} &
+\textbf{Thr.} & \textbf{ACC} & \textbf{Prec.} & \textbf{Recall} &
+\textbf{F1} & \textbf{AUROC} & \textbf{MCC} & \textbf{AUPRC} \\
+\midrule
+\rowcolor{paperbg}
+\textit{Paper} & \textit{(UBtest\_25)} & \NA & \NA & \NA & \NA & \NA & \NA & 0.3200\textsuperscript{$\dagger$} & 0.3430\textsuperscript{$\dagger$} \\
+\midrule
+Run~1 & Fold 1 & 0.69 & 0.8464 & 0.3633 & 0.3699 & 0.3666 & 0.7625 & 0.2792 & 0.3135 \\
+Run~1 & Fold 2 & 0.74 & 0.8621 & 0.4071 & 0.3235 & 0.3605 & 0.7605 & 0.2867 & 0.3218 \\
+Run~1 & Fold 3 & 0.66 & 0.8318 & 0.3463 & 0.4501 & 0.3914 & 0.7658 & 0.2992 & 0.3246 \\
+Run~1 & Fold 4 & 0.66 & 0.8547 & 0.3525 & 0.2504 & 0.2928 & 0.7479 & 0.2183 & 0.2878 \\
+Run~1 & Fold 5 & 0.74 & 0.8540 & 0.3853 & 0.3615 & 0.3730 & 0.7623 & 0.2907 & 0.3261 \\
+\rowcolor{avgbg}
+\textbf{Run~1} & \textbf{CV Avg} & \textbf{0.70} & \textbf{0.8498} & \textbf{0.3709} & \textbf{0.3511} & \textbf{0.3569} & \textbf{0.7598} & \textbf{0.2748} & \textbf{0.3147} \\
+\midrule
+Run~3 & Fold 1 & 0.67 & 0.8521 & 0.3861 & 0.3910 & 0.3885 & 0.7604 & 0.3044 & 0.3151 \\
+Run~3 & Fold 2 & 0.67 & 0.8651 & 0.4162 & 0.3038 & 0.3512 & 0.7669 & 0.2823 & 0.3218 \\
+Run~3 & Fold 3 & 0.66 & 0.8459 & 0.3662 & 0.3868 & 0.3762 & 0.7648 & 0.2885 & 0.3173 \\
+Run~3 & Fold 4 & 0.75 & 0.8574 & 0.4021 & 0.3840 & 0.3928 & 0.7772 & 0.3121 & 0.3334 \\
+Run~3 & Fold 5 & 0.70 & 0.8611 & 0.3939 & 0.2897 & 0.3339 & 0.7539 & 0.2621 & 0.3027 \\
+\rowcolor{avgbg}
+\textbf{Run~3} & \textbf{CV Avg} & \textbf{0.69} & \textbf{0.8563} & \textbf{0.3929} & \textbf{0.3511} & \textbf{0.3685} & \textbf{0.7646} & \textbf{0.2899} & \textbf{0.3181} \\
+\midrule
+\good{$\Delta$} & \good{Run~3 $-$ Run~1} & & \good{$+$0.0065} & \good{$+$0.0220} & \good{$\pm$0.0000} & \good{$+$0.0116} & \good{$+$0.0048} & \good{$+$0.0151} & \good{$+$0.0034} \\
+\bottomrule
+\end{tabular}}
+\smallskip\\
+{\footnotesize $\dagger$ Different protein subset; not a valid comparison.}
+\end{table}
+
+% ================================================================
+\section{Cross-Validation Averages --- All Test Sets}
+% ================================================================
+
+\begin{table}[ht]
+\caption{5-fold CV averages across all test sets.
+(A) = our Aug~25 run (res=False, $\gamma$=2.0) included as the pre-fix reference point.
+\colorbox{paperbg}{\strut Green} = paper target; \colorbox{avgbg}{\strut Blue} = best of our runs.}
+\label{tab:summary}
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{L L N N N N N N N}
+\toprule
+\textbf{Test Set} & \textbf{System} &
+\textbf{ACC} & \textbf{Prec.} & \textbf{Recall} & \textbf{F1} &
+\textbf{AUROC} & \textbf{MCC} & \textbf{AUPRC} \\
+\midrule
+%% ---- TEST 60 ----
+\rowcolor{paperbg}
+\texttt{Test\_60}         & Paper GTE-PPIS             & 0.8610 & 0.5570 & 0.6110 & 0.5820 & 0.8730 & 0.5000 & 0.6110 \\
+\texttt{Test\_60}         & (A) Aug~25 res=F,$\gamma$=2 & 0.8405 & 0.4978 & 0.5734 & 0.5319 & 0.8476 & 0.4388 & 0.5380 \\
+\texttt{Test\_60}         & Run~1: res=T,$\gamma$=2     & 0.8438 & 0.5071 & 0.5829 & 0.5402 & 0.8537 & 0.4500 & 0.5518 \\
+\rowcolor{avgbg}
+\texttt{Test\_60}         & \textbf{Run~3: res=T,$\gamma$=0} & \textbf{0.8450} & \textbf{0.5107} & \textbf{0.5831} & \textbf{0.5420} & \textbf{0.8570} & \textbf{0.4526} & \textbf{0.5624} \\
+\midrule
+%% ---- TEST 315 ----
+\rowcolor{paperbg}
+\texttt{Test\_315-28}     & Paper GTE-PPIS             & \NA    & \NA    & \NA    & \NA    & \NA    & 0.5110 & 0.5980 \\
+\texttt{Test\_315-28}     & (A) Aug~25 res=F,$\gamma$=2 & 0.8199 & 0.4181 & 0.6847 & 0.5189 & 0.8585 & 0.4354 & 0.5182 \\
+\texttt{Test\_315-28}     & Run~1: res=T,$\gamma$=2     & 0.8211 & 0.4238 & 0.6960 & 0.5249 & 0.8638 & 0.4443 & 0.5337 \\
+\rowcolor{avgbg}
+\texttt{Test\_315-28}     & \textbf{Run~3: res=T,$\gamma$=0} & \textbf{0.8229} & \textbf{0.4288} & \textbf{0.7035} & \textbf{0.5305} & \textbf{0.8684} & \textbf{0.4515} & \textbf{0.5423} \\
+\midrule
+%% ---- UBTEST ----
+\rowcolor{paperbg}
+\texttt{UBtest\_31-6}     & Paper (UBtest\_25)\textsuperscript{$\dagger$} & \NA & \NA & \NA & \NA & \NA & 0.3200 & 0.3430 \\
+\texttt{UBtest\_31-6}     & (A) Aug~25 res=F,$\gamma$=2 & 0.8504 & 0.3717 & 0.3418 & 0.3542 & 0.7611 & 0.2713 & 0.3115 \\
+\texttt{UBtest\_31-6}     & Run~1: res=T,$\gamma$=2     & 0.8498 & 0.3709 & 0.3511 & 0.3569 & 0.7598 & 0.2748 & 0.3147 \\
+\rowcolor{avgbg}
+\texttt{UBtest\_31-6}     & \textbf{Run~3: res=T,$\gamma$=0} & \textbf{0.8563} & \textbf{0.3929} & \textbf{0.3511} & \textbf{0.3685} & \textbf{0.7646} & \textbf{0.2899} & \textbf{0.3181} \\
+\bottomrule
+\end{tabular}}
+\smallskip\\
+{\footnotesize $\dagger$ UBtest\_31-6 vs.\ UBtest\_25: different protein subsets. Not a valid comparison to paper.}
+\end{table}
+
+% ================================================================
+\section{Incremental Gains and Remaining Gap}
+% ================================================================
+
+\begin{table}[ht]
+\caption{Incremental MCC / AUROC / AUPRC deltas per step on \texttt{Test\_60}.
+(A)$\to$Run~1 is the only cleanly isolated effect (GT residual, $\gamma$ unchanged).
+Run~1$\to$Run~3 is \warn{confounded}: Run~2 (res=False,$\,\gamma$=0) was never executed.}
+\label{tab:incremental}
+\begin{tabular}{L L c c c}
+\toprule
+\textbf{Step} & \textbf{Change} & \textbf{$\Delta$ MCC} & \textbf{$\Delta$ AUROC} & \textbf{$\Delta$ AUPRC} \\
+\midrule
+(A)$\to$Run~1 & GT residual False$\to$True \quad ($\gamma$=2.0 unchanged) &
+  \good{$+$0.0112} & \good{$+$0.0061} & \good{$+$0.0138} \\
+Run~1$\to$Run~3 & $\gamma$: 2.0$\to$0.0 \quad\warn{[confounded; res already True]} &
+  \good{$+$0.0026} & \good{$+$0.0033} & \good{$+$0.0106} \\
+\midrule
+(A)$\to$Run~3 & Total (both changes combined) &
+  \good{$+$0.0138} & \good{$+$0.0094} & \good{$+$0.0244} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[ht]
+\caption{Gap from our best run (Run~3) to the paper's published GTE-PPIS.}
+\label{tab:gap}
+\begin{tabular}{L c c c c c c c}
+\toprule
+\textbf{Test Set} & \textbf{ACC} & \textbf{Prec.} & \textbf{Recall} & \textbf{F1} &
+\textbf{AUROC} & \textbf{MCC} & \textbf{AUPRC} \\
+\midrule
+\texttt{Test\_60}  (rel.\,\%)
+  & $-$1.9 & $-$8.3 & $-$4.6 & $-$6.9 & $-$1.8 & $-$9.5 & $-$8.0 \\
+\texttt{Test\_315-28} (rel.\,\%)
+  & \NA & \NA & \NA & \NA & \NA & $-$11.6 & $-$9.3 \\
+\texttt{UBtest\_31-6}\textsuperscript{$\dagger$}
+  & \multicolumn{7}{l}{\footnotesize Not comparable --- different protein subset} \\
+\bottomrule
+\end{tabular}
+\smallskip\\
+{\footnotesize $\dagger$ Shown for completeness; not a valid gap measurement.}
+\end{table}
+
+% ================================================================
+\section*{Key Caveats}
+% ================================================================
+
+\begin{enumerate}[leftmargin=1.5em, itemsep=2pt, topsep=3pt]
+    \item \textbf{Single seed only} (\code{SEED=2024}).
+    Deltas of $\Delta$\,MCC $<$ 0.02 are within plausible seed noise.
+    Multi-seed reruns ($\geq$3 seeds) required before any claim is publishable.
+
+    \item \textbf{Run~2 never executed.}
+    Loss-function contribution (res=False,$\,\gamma$=0.0) remains unmeasured.
+    The Run~1$\to$Run~3 step confounds residual and loss changes.
+
+    \item \textbf{UBtest split mismatch.}
+    \texttt{UBtest\_31-6} $\neq$ paper's \texttt{UBtest\_25}; all UBtest figures are for
+    internal fold-consistency tracking only.
+
+    \item \textbf{Remaining gap sources (unresolved this session).}
+    EGNN \code{tanh=True}/\code{attention=True}, \code{ReduceLROnPlateau} schedule,
+    possible EGNN dim/layer count discrepancy, unknown paper seed.
+\end{enumerate}
+
+\end{document}

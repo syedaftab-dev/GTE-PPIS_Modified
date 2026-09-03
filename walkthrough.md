@@ -60,15 +60,17 @@ source venv/bin/activate && python train.py --fusion_mode none --focal_gamma 2.0
 source venv/bin/activate && python train.py --fusion_mode concat --d_proj 128 --focal_gamma 2.0
 ```
 
-### C. Gated Fusion Mode
+### C. Gated Fusion Mode with Biophysics Supervision & Branch Regularization (Novel Proposed Method)
 ```bash
-source venv/bin/activate && python train.py --fusion_mode gated --d_proj 128 --focal_gamma 2.0
+source venv/bin/activate && python train.py \
+    --fusion_mode gated \
+    --d_proj 128 \
+    --focal_gamma 2.0 \
+    --lambda_gate 0.1 \
+    --lambda_agree 0.1
 ```
-
-### D. Single-Head Cross-Attention Fusion Mode
-```bash
-source venv/bin/activate && python train.py --fusion_mode cross_attn --d_proj 128 --focal_gamma 2.0
-```
+*   `--lambda_gate 0.1`: Loss weight for biophysics-supervised RSA gate loss (Idea 1). Teaches the gate to prefer PLM representations for surface-exposed residues (RSA $\to$ 1) and classical evolutionary features for buried residues (RSA $\to$ 0).
+*   `--lambda_agree 0.1`: Loss weight for branch agreement regularization (Idea 2). Minimises prediction disagreement between EGNN (geometric) and Graph Transformer (topological) branches.
 
 ### Model Logging and Outputs
 Checkpoints and execution logs are saved in mode-specific directories inside the `./Log/` folder:
