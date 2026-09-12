@@ -12,7 +12,7 @@ from final_model import *
 from GraphTransformer_Block import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--fusion_mode', type=str, default='none', choices=['none', 'concat', 'gated', 'cross_attn'])
+parser.add_argument('--fusion_mode', type=str, default='none', choices=['none', 'concat', 'gated'])
 parser.add_argument('--d_proj', type=int, default=128)
 parser.add_argument('--model_dir', type=str, required=True, help="Directory containing the model checkpoints")
 parser.add_argument('--smoke_test', action='store_true')
@@ -74,7 +74,18 @@ def evaluate(model, data_loader):
             if getattr(model, 'fusion_mode', 'none') == 'gated' and model.last_gate_val is not None:
                 gates = model.last_gate_val.cpu().numpy().flatten()
                 lbls = labels.numpy().flatten()
-                rsas = node_features[:, 11].numpy().flatten()
+                # Load actual RSA values from Feature/rsa/ (mirrors data_generator.py lines 155-166)
+                rsa_path = os.path.join(Feature_Path, "rsa", f"{sequence_names[0]}.npy")
+                seq_len = len(lbls)
+                if os.path.exists(rsa_path):
+                    rsas = np.load(rsa_path).astype(np.float32)
+                    if len(rsas) != seq_len:
+                        if len(rsas) > seq_len:
+                            rsas = rsas[:seq_len]
+                        else:
+                            rsas = np.concatenate([rsas, np.full((seq_len - len(rsas),), 0.5, dtype=np.float32)])
+                else:
+                    rsas = np.full(seq_len, 0.5, dtype=np.float32)
                 for g, l, r in zip(gates, lbls, rsas):
                     gate_records.append((g, l, r))
 

@@ -11,7 +11,7 @@ from final_model import *
 from GraphTransformer_Block import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--fusion_mode', type=str, default='none', choices=['none', 'concat', 'gated', 'cross_attn'])
+parser.add_argument('--fusion_mode', type=str, default='none', choices=['none', 'concat', 'gated'])
 parser.add_argument('--d_proj', type=int, default=128)
 parser.add_argument('--model_dir', type=str, required=True, help="Directory containing the model checkpoints")
 parser.add_argument('--smoke_test', action='store_true')

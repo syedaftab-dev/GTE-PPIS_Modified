@@ -50,6 +50,5 @@ fi
 # Now run the other three modes sequentially
 run_exp "concat"
 run_exp "gated"
-run_exp "cross_attn"
 
 echo "All experiments completed successfully!"

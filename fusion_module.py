@@ -20,14 +20,10 @@ class FeatureFusionModule(nn.Module):
         # 2. Fusion variant components
         if fusion_mode == 'gated':
             self.gate_linear = nn.Linear(2 * d_proj, 1)
-        elif fusion_mode == 'cross_attn':
-            # Single-head cross-attention, classical_proj as query, plm_proj as key/value
-            self.cross_attention = nn.MultiheadAttention(embed_dim=d_proj, num_heads=1, batch_first=True)
-            self.post_attn_ln = nn.LayerNorm(d_proj)
         elif fusion_mode == 'concat':
             pass
         else:
-            raise ValueError(f"Unsupported fusion mode: {fusion_mode}")
+            raise ValueError(f"Unsupported fusion mode: {fusion_mode!r}. Valid modes: 'none', 'concat', 'gated'")
             
         # Initialize projections with standard gain
         nn.init.xavier_uniform_(self.classical_proj.weight, gain=1.0)
@@ -38,11 +34,6 @@ class FeatureFusionModule(nn.Module):
         if fusion_mode == 'gated':
             nn.init.xavier_uniform_(self.gate_linear.weight, gain=1.0)
             nn.init.zeros_(self.gate_linear.bias)
-        elif fusion_mode == 'cross_attn':
-            nn.init.xavier_uniform_(self.cross_attention.in_proj_weight, gain=1.0)
-            nn.init.zeros_(self.cross_attention.in_proj_bias)
-            nn.init.xavier_uniform_(self.cross_attention.out_proj.weight, gain=1.0)
-            nn.init.zeros_(self.cross_attention.out_proj.bias)
             
     def forward(self, classical_i, plm_i):
         if torch.isnan(classical_i).any() or torch.isnan(plm_i).any():
@@ -65,17 +56,6 @@ class FeatureFusionModule(nn.Module):
             if torch.isnan(gate_val).any():
                 print("[DEBUG] NaN detected in gate_val!")
             fused_i = gate_val * c_proj + (1.0 - gate_val) * p_proj  # (N, d)
-        elif self.fusion_mode == 'cross_attn':
-            # Treat each residue as a 1-token sequence: shape (N, 1, d)
-            q = c_proj.unsqueeze(1)    # (N, 1, d)
-            kv = p_proj.unsqueeze(1)   # (N, 1, d)
-            
-            # attn_output shape: (N, 1, d)
-            attn_output, _ = self.cross_attention(q, kv, kv)
-            attn_output = attn_output.squeeze(1)  # (N, d)
-            
-            # Residual connection + LayerNorm
-            fused_i = self.post_attn_ln(c_proj + attn_output)  # (N, d)
             
         if torch.isnan(fused_i).any():
             print("[DEBUG] NaN detected in fused_i output!")

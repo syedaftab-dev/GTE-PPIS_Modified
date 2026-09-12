@@ -15,7 +15,7 @@ from GraphTransformer_Block import *
 from loss import compute_pos_weight
 
 parser = argparse.ArgumentParser()
-parser.add_argument('--fusion_mode', type=str, default='none', choices=['none', 'concat', 'gated', 'cross_attn'])
+parser.add_argument('--fusion_mode', type=str, default='none', choices=['none', 'concat', 'gated'])
 parser.add_argument('--d_proj', type=int, default=128)
 parser.add_argument('--model_time', type=str, default=None)
 parser.add_argument('--smoke_test', action='store_true')

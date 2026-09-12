@@ -37,7 +37,7 @@ class FinalModel(nn.Module):
         elif fusion_mode == 'concat':
             self.actual_input_size = 2 * d_proj + 21
             self.fusion_module = FeatureFusionModule(fusion_mode=fusion_mode, d_proj=d_proj)
-        elif fusion_mode in ['gated', 'cross_attn']:
+        elif fusion_mode == 'gated':
             self.actual_input_size = d_proj + 21
             self.fusion_module = FeatureFusionModule(fusion_mode=fusion_mode, d_proj=d_proj)
         else:
