@@ -1,66 +1,84 @@
-# FFM Evaluation Walkthrough Guide
+# GTE-PPIS FFM: Pipeline Walkthrough
 
-This document describes how to execute the embedding generation, run the training configurations, and evaluate the checkpoints across the different feature fusion modes.
-
----
-
-
-## 0. Latest Changes: Stability + Focal Loss (2026-07-30)
-
-**Problem**: Previous run (`fusion_gated_d128_2026-07-23-15-16-42`) — Folds 2, 5, and both full models collapsed (MCC=0, threshold=0.0). Fold 4 alone succeeded (AUROC 0.7585, MCC 0.3055 on Test_60).
-
-Three root causes fixed:
-- **EGNN `residual=False`** across 10 layers → fixed with `residual=True` in `final_model.py`
-- **Unweighted CE loss** vs. 15.61% positive class → replaced with `FocalLoss(alpha=[1.0, 5.4056], gamma=2.0)`
-- **Threshold scan included 0.0** → masked collapse as "Recall=1.0, MCC=0" → fixed to start at 0.01 in `train.py` + `test.py`
-
-**New file**: `loss.py` — `FocalLoss(alpha, gamma=2.0)` and `compute_pos_weight()`. Measured neg/pos ratio from Train_335: **5.4056** (15.61% positive, 84.39% negative, 66,208 residues).
-
-**Training command**: `python train.py --fusion_mode gated --d_proj 128 --focal_gamma 2.0`
-
-Ablation (weighted CE, no focal modulation): `--focal_gamma 0.0`
-
-**Pass criteria**: All 5 folds MCC > 0; CV avg AUROC ≥ 0.70; CV avg MCC ≥ 0.25 on Test_60.
+This document describes how to execute the full pipeline — embedding generation, feature pre-processing, training, and evaluation — for each feature fusion mode.
 
 ---
 
+## 0. Stability Fixes Applied (Context)
+
+**2026-07-30 (commit `0475828`)**: EGNN collapse fixed:
+- `residual=False` across 10 EGNN layers → fixed with `residual=True` in `final_model.py`
+- Unweighted CE loss vs. 15.61% positive class → replaced with `FocalLoss(alpha=[1.0, pw], gamma)` where `pw` is the per-fold neg/pos ratio
+- Threshold scan included 0.0 → masked collapse as Recall=1.0/MCC=0 → fixed to start at 0.01
+
+**2026-09-03 (commit `d0c93b5`)**: GT residual fix:
+- `transformer_residual=False` in `GraghTransformer` → corrected to `True`, matching paper's Eq. 8/10 design
+
+**2026-09-03 (commit `3b04b2a`)**: Biophysics supervision added:
+- `generate_rsa_features.py` created; `compute_auxiliary_losses()` added to `FinalModel`
+- `--lambda_gate` (RSA gate MSE) and `--lambda_agree` (branch agreement KL) wired into `train.py`
+
+**2026-09-12 (commit `d6864e3`)**: `cross_attn` mode removed:
+- Confirmed unused in any production run; had a silent bug (`gate_val` always `None`)
+- Valid `--fusion_mode` values are now: `none`, `concat`, `gated`
+
+---
 
 ## 1. Setup and Environment
 
-Ensure that all dependencies are installed in your virtual environment:
 ```bash
-./venv/bin/pip install transformers accelerate
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+# DGL requires a manual install matching your CUDA version, e.g.:
+# pip install dgl -f https://data.dgl.ai/wheels/torch-2.4/cu121/repo.html
 ```
 
 ---
 
 ## 2. Generating ESM-2 Embeddings
 
-Before running any fusion experiments (other than the classical `none` baseline), you must pre-extract and cache the ESM-2 (650M) per-residue embeddings:
+Required for all fusion modes except `none`. Run once across all dataset splits:
+
 ```bash
-./venv/bin/python generate_esm2_embeddings.py
+python generate_esm2_embeddings.py
 ```
-*   **Input**: Protein sequences defined in the dataset files (`Train_335.pkl`, `Test_60.pkl`, `Test_315-28.pkl`, `UBtest_31-6.pkl`).
-*   **Output**: Saved as float16 `.npy` files inside the directory `./Feature/esm2/`.
-*   **VRAM Safeguards**: Automatically runs in `fp16` on GPU to save memory, and automatically falls back to float32 on CPU if an Out-Of-Memory (OOM) error occurs.
+
+- **Input**: All protein IDs from `Dataset/Train_335.pkl`, `Test_60.pkl`, `Test_315-28.pkl`, `UBtest_31-6.pkl`
+- **Output**: `Feature/esm2/{ID}.npy` (float16, shape L×1280)
+- **VRAM**: Runs in fp16 on GPU; automatically falls back to CPU float32 on OOM
 
 ---
 
-## 3. Training the Models
+## 3. Generating RSA Features
 
-To train the models with cross-validation and a full training dataset run, use `train.py` with the `--fusion_mode` argument.
+Required for gated mode with RSA gate supervision (`--lambda_gate > 0`). Requires PDB files to be downloaded to `PDB/`.
 
-### A. Classical Baseline (Original Model features only)
+```bash
+python generate_rsa_features.py
+```
+
+- **Input**: PDB files from `./PDB/`; protein lists from the same 4 dataset pickles
+- **Output**: `Feature/rsa/{ID}.npy` (float32, L-dim, range [0,1], normalised by per-residue max ASA)
+- **Fallback**: Proteins without PDB files get 0.5 (neutral fallback). `2j3rA` is skipped entirely (removed from Train\_335 during training).
+
+---
+
+## 4. Training the Models
+
+Training entry point: `train.py`. Runs 5-fold cross-validation on Train\_335 (334 proteins after removing `2j3rA`) then trains a full model on all data.
+
+### A. Classical Backbone — No ESM-2 (Baseline)
 ```bash
 source venv/bin/activate && python train.py --fusion_mode none --focal_gamma 2.0
 ```
 
-### B. Naive Concat Fusion Mode
+### B. Naive Concat Fusion
 ```bash
 source venv/bin/activate && python train.py --fusion_mode concat --d_proj 128 --focal_gamma 2.0
 ```
 
-### C. Gated Fusion Mode with Biophysics Supervision & Branch Regularization (Novel Proposed Method)
+### C. Gated Fusion — Full Proposed Method
 ```bash
 source venv/bin/activate && python train.py \
     --fusion_mode gated \
@@ -69,48 +87,113 @@ source venv/bin/activate && python train.py \
     --lambda_gate 0.1 \
     --lambda_agree 0.1
 ```
-*   `--lambda_gate 0.1`: Loss weight for biophysics-supervised RSA gate loss (Idea 1). Teaches the gate to prefer PLM representations for surface-exposed residues (RSA $\to$ 1) and classical evolutionary features for buried residues (RSA $\to$ 0).
-*   `--lambda_agree 0.1`: Loss weight for branch agreement regularization (Idea 2). Minimises prediction disagreement between EGNN (geometric) and Graph Transformer (topological) branches.
 
-### Model Logging and Outputs
-Checkpoints and execution logs are saved in mode-specific directories inside the `./Log/` folder:
-`./Log/fusion_<fusion_mode>_d<d_proj>_<timestamp>/model/`
+- `--lambda_gate 0.1`: Weight for RSA-supervised gate MSE loss. Teaches the scalar gate to prefer classical features for buried residues (RSA→0) and PLM features for surface-exposed residues (RSA→1).
+- `--lambda_agree 0.1`: Weight for branch-agreement loss. Penalises divergence between EGNN and GT branch softmax predictions.
+
+### D. Gated Fusion — Ablation (no gate supervision)
+```bash
+source venv/bin/activate && python train.py \
+    --fusion_mode gated \
+    --d_proj 128 \
+    --focal_gamma 0.0 \
+    --lambda_gate 0.0 \
+    --lambda_agree 0.0
+```
+Use this to isolate the effect of RSA supervision from the architecture changes.
+
+### Outputs
+Checkpoints and training logs saved to:
+```
+./Log/fusion_<fusion_mode>_d<d_proj>_<timestamp>/
+├── training.log
+└── model/
+    ├── Fold1_best_model.pkl  ... Fold5_best_model.pkl
+    └── Full_model_<epoch>.pkl
+```
+
+Checkpoint criterion: best validation AUPRC across 50 epochs per fold.
 
 ---
 
-## 4. Run Smoke Tests (Quick Code Verification)
+## 5. Smoke Tests (Quick Code Verification)
 
-To verify that the forward and backward passes run successfully on your system without training to completion, append the `--smoke_test` flag:
+Restricts to 2 samples, 1 fold, 1 epoch — verifies forward/backward pass without full training:
+
 ```bash
+source venv/bin/activate && python train.py --fusion_mode none   --smoke_test --focal_gamma 2.0
 source venv/bin/activate && python train.py --fusion_mode concat --smoke_test --focal_gamma 2.0
-source venv/bin/activate && python train.py --fusion_mode gated --smoke_test --focal_gamma 2.0
-source venv/bin/activate && python train.py --fusion_mode cross_attn --smoke_test --focal_gamma 2.0
+source venv/bin/activate && python train.py --fusion_mode gated  --smoke_test --focal_gamma 2.0
 ```
-*   **Behavior**: Restricts the datasets to 2 samples, runs exactly 1 fold and 1 epoch, and exits immediately.
 
 ---
 
-## 5. Testing and Evaluation
+## 6. Testing and Evaluation
 
-Once training has completed for a specific mode, evaluate the saved checkpoints on all test sets (`Test_60`, `Test_315-28`, and `UBtest_31-6`) by pointing `test.py` to the appropriate model directory:
+Entry point: `test.py`. Requires `--model_dir` pointing to the checkpoint folder of a completed training run.
 
 ```bash
-source venv/bin/activate && python test.py --fusion_mode <fusion_mode> --d_proj 128 --model_dir Log/fusion_<fusion_mode>_d128_<timestamp>/model/
+source venv/bin/activate && python test.py \
+    --fusion_mode <fusion_mode> \
+    --d_proj 128 \
+    --model_dir Log/fusion_<fusion_mode>_d128_<timestamp>/model/
 ```
 
-### Gate Value Collection (Gated Mode only)
-When executing evaluation in `gated` mode, the script automatically dumps per-residue gate values to a CSV file inside the specified `--model_dir` directory:
-`<checkpoint_name>_gate_records.csv`
-This file logs:
-- `gate_value` (continuous scalar in range $[0, 1]$ where 1.0 represents classical features and 0.0 represents PLM features)
-- `label` (binary binding site indicator)
-- `rsa` (relative solvent accessibility from DSSP)
+Evaluates on all three benchmarks: `Test_60`, `Test_315-28`, `UBtest_31-6`.
+
+### Threshold Protocol (No Test-Label Leakage)
+For each fold checkpoint `FoldK_best_model.pkl`:
+1. Reconstruct the fold-K validation split by replaying `KFold(n_splits=5, shuffle=True, random_state=SEED=2024)` on Train\_335.
+2. Evaluate on the validation split; search τ ∈ [0.01, 0.99] to maximise validation F1.
+3. Lock this τ. Apply it to the test set without consulting test labels.
+
+For full models (`Full_model_*.pkl`): uses the mean of the 5 fold thresholds.
+
+### Gate Value Collection (Gated Mode Only)
+In `gated` mode, per-residue gate values are written to a CSV alongside each checkpoint's test evaluation:
+```
+<model_dir>/<checkpoint_name>_gate_records.csv
+```
+Columns:
+- `gate_value`: continuous scalar ∈ [0,1]; 1.0 = classical features, 0.0 = PLM features
+- `label`: binary interface indicator (ground truth)
+- `rsa`: relative solvent accessibility loaded from `Feature/rsa/{id}.npy` (FreeSASA-derived, not from DSSP)
 
 ---
 
-## 6. Verification Status
+## 7. Current Status and Results
 
-*   **`none` (baseline)**: Verified and completed (checkpoints and evaluation results exist in `Log/fusion_none_d128_2026-07-01-09-34-00/`).
-*   **`concat`**: Passed smoke test. Ready for full training.
-*   **`cross_attn`**: Passed smoke test (with projection LayerNorm and gain=1.0 patch). Ready for full training.
-*   **`gated`**: Passed smoke test (after enabling `tanh=True` for EGNN coordinate updates to prevent scale explosion). Ready for full training.
+All numbers are 5-fold CV averages with validation-locked thresholds, from actual log files.
+
+| Run | Fusion | γ | GT res | Gate sup | Test\_60 AUROC | Test\_60 AUPRC | UBtest AUROC | UBtest AUPRC | Log |
+|---|---|---|---|---|---|---|---|---|---|
+| No-ESM2 (Aug 25) | `none` | 2.0 | True | — | 0.8537 | 0.5518 | 0.7611 | 0.3115 | `fusion_none_d128_2026-08-25-11-28-09` |
+| Unsup. gate (Aug 13) | `gated` | 2.0 | False† | None | 0.8236 | 0.5056 | 0.8191 | 0.4182 | `fusion_gated_d128_2026-08-13-11-53-23` |
+| RSA-sup. gate (Sep 11) | `gated` | 0.0 | True | RSA λ=0.1 | 0.8116 | 0.4863 | 0.8159 | 0.4248 | `fusion_gated_d128_2026-09-11-15-22-42` |
+| `concat` | — | — | — | — | not run | — | — | — | — |
+
+† Pre-`d0c93b5` bug: GT `transformer_residual=False`.  
+Published GTE-PPIS baseline: Test\_60 AUROC 0.873, AUPRC 0.611 (Wang et al. 2025).
+
+**ESM-2 trade-off**: Gated fusion consistently improves UBtest AUPRC/MCC (+0.107 / +0.099 vs. no-ESM2 backbone) at the cost of Test\_60 performance. This pattern holds under both unsupervised and RSA-supervised gating.
+
+**RSA supervision**: Did not improve Test\_60 or Test\_315-28 AUROC/AUPRC. Marginal UBtest AUPRC improvement (+0.0066) is below expected single-seed variance. Three confounders (γ, GT residual, λ\_gate) changed simultaneously — a confounder isolation run is the immediate next step.
+
+Full per-fold tables and delta analysis: [`rsa_supervision_ablation_report.tex`](rsa_supervision_ablation_report.tex).
+
+---
+
+## 8. Where to Look for What
+
+| Task | File(s) |
+|---|---|
+| Change model hyperparameters (epochs, hidden dim, layers) | `data_generator.py` (constants at top) |
+| Change EGNN architecture | `EGNN_model.py`, `final_model.py` line 50–52 |
+| Change GT architecture | `GraphTransformer_Block.py`, `final_model.py` line 54–56 |
+| Change fusion logic | `fusion_module.py` |
+| Add a new fusion mode | `fusion_module.py` → `FeatureFusionModule`, `final_model.py` → `__init__` dimension logic, `train.py`/`test.py` `choices=` list |
+| Change loss function | `loss.py`, `final_model.py` line 68 |
+| Change auxiliary loss targets | `final_model.py` → `compute_auxiliary_losses()` |
+| Debug NaN/collapse | Enable debug prints in `fusion_module.py` (already present); check EGNN `residual=True` and `tanh=True` in `final_model.py` |
+| Inspect gate behaviour | Load checkpoint, call `model.forward(...)`, read `model.last_gate_val`; or load a `_gate_records.csv` from a test run |
+
