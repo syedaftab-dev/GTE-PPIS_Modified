@@ -25,6 +25,8 @@ Full pinned dependencies: [`requirements.txt`](requirements.txt)
 
 ## Architecture Overview
 
+See the full rendered architecture diagram in [`architecture.md`](architecture.md), including the active fusion variants, parallel graph branches, and training objectives.
+
 ```
 Raw Node Features (61d per residue):
   DSSP (14d) + PSSM (20d) + HMM (20d) + resAF (7d)
